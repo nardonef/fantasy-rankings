@@ -1,0 +1,88 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { GripVertical, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import type { PlayerRecord } from "@/app/actions/players";
+
+export function PlayerRow({
+  player,
+  rank,
+  showPosition,
+  onDelete,
+}: {
+  player: PlayerRecord;
+  rank: number;
+  showPosition: boolean;
+  onDelete: (player: PlayerRecord) => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: player.id });
+  const [confirming, setConfirming] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  function handleDeleteClick() {
+    if (!confirming) {
+      setConfirming(true);
+      timeoutRef.current = setTimeout(() => setConfirming(false), 3000);
+      return;
+    }
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setConfirming(false);
+    onDelete(player);
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "flex items-center gap-3 rounded-md border bg-card px-3 py-2",
+        isDragging && "opacity-50",
+      )}
+    >
+      <button
+        type="button"
+        className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
+        aria-label="Drag to reorder"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="size-4" />
+      </button>
+      <span className="w-6 text-right text-sm tabular-nums text-muted-foreground">
+        {rank}
+      </span>
+      <span className="flex-1 truncate text-sm font-medium">{player.name}</span>
+      {showPosition && (
+        <span className="text-xs font-semibold text-muted-foreground">
+          {player.position}
+        </span>
+      )}
+      <span className="text-xs text-muted-foreground">{player.team}</span>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={handleDeleteClick}
+        className={confirming ? "text-destructive" : "text-muted-foreground"}
+      >
+        {confirming ? "Confirm?" : <X className="size-4" />}
+      </Button>
+    </div>
+  );
+}
