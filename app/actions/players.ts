@@ -144,6 +144,26 @@ export async function updateTier(input: {
   return {};
 }
 
+export async function updateNotes(input: {
+  playerId: number;
+  seasonYear: number;
+  position: Position;
+  notes: string;
+}): Promise<{ error?: string }> {
+  const { playerId, seasonYear, position, notes } = input;
+  const db = getDb();
+
+  await db
+    .update(players)
+    .set({ notes: notes.length > 0 ? notes : null })
+    .where(eq(players.id, playerId));
+
+  revalidatePath(positionPath(seasonYear, position));
+  revalidatePath(overallPath(seasonYear));
+
+  return {};
+}
+
 export async function reorderPlayers(input: {
   seasonYear: number;
   context: "position" | "overall";

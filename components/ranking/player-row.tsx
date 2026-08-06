@@ -7,6 +7,7 @@ import { GripVertical, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { TierDots } from "@/components/ranking/tier-dots";
+import { NotesEditor } from "@/components/ranking/notes-editor";
 import type { PlayerRecord, PlayerTier } from "@/app/actions/players";
 
 export function PlayerRow({
@@ -15,12 +16,14 @@ export function PlayerRow({
   showPosition,
   onDelete,
   onTierChange,
+  onNotesChange,
 }: {
   player: PlayerRecord;
   rank: number;
   showPosition: boolean;
   onDelete: (player: PlayerRecord) => void;
   onTierChange: (player: PlayerRecord, tier: PlayerTier | null) => void;
+  onNotesChange: (player: PlayerRecord, notes: string) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: player.id });
@@ -81,6 +84,10 @@ export function PlayerRow({
         </span>
       )}
       <span className="text-xs text-muted-foreground">{player.team}</span>
+      <NotesEditor
+        notes={player.notes}
+        onSave={(notes) => onNotesChange(player, notes)}
+      />
       <Button
         type="button"
         variant="ghost"

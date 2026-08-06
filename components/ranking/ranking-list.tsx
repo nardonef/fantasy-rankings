@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import {
   deletePlayer,
   reorderPlayers,
+  updateNotes,
   updateTier,
   type PlayerRecord,
   type PlayerTier,
@@ -118,6 +119,26 @@ export function RankingList({
     });
   }
 
+  function handleNotesChange(player: PlayerRecord, notes: string) {
+    const previous = items;
+    const nextNotes = notes.length > 0 ? notes : null;
+    setItems(items.map((p) => (p.id === player.id ? { ...p, notes: nextNotes } : p)));
+
+    startTransition(() => {
+      updateNotes({
+        playerId: player.id,
+        seasonYear,
+        position: player.position,
+        notes,
+      }).then((result) => {
+        if (result.error) {
+          setItems(previous);
+          toast.error("Couldn't save notes.");
+        }
+      });
+    });
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
@@ -155,6 +176,7 @@ export function RankingList({
                   showPosition={context === "overall"}
                   onDelete={handleDelete}
                   onTierChange={handleTierChange}
+                  onNotesChange={handleNotesChange}
                 />
               ))}
             </div>
