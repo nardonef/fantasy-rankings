@@ -8,6 +8,7 @@ import { ranksForOrder } from "@/lib/ranking";
 import type { Position } from "@/lib/positions";
 
 export type PlayerRecord = typeof players.$inferSelect;
+export type PlayerTier = NonNullable<PlayerRecord["tier"]>;
 
 function positionPath(seasonYear: number, position: Position) {
   return `/${seasonYear}/${position.toLowerCase()}`;
@@ -119,6 +120,23 @@ export async function deletePlayer(input: {
     const [first, ...rest] = updates;
     await db.batch([deleteStmt, first, ...rest]);
   }
+
+  revalidatePath(positionPath(seasonYear, position));
+  revalidatePath(overallPath(seasonYear));
+
+  return {};
+}
+
+export async function updateTier(input: {
+  playerId: number;
+  seasonYear: number;
+  position: Position;
+  tier: PlayerTier | null;
+}): Promise<{ error?: string }> {
+  const { playerId, seasonYear, position, tier } = input;
+  const db = getDb();
+
+  await db.update(players).set({ tier }).where(eq(players.id, playerId));
 
   revalidatePath(positionPath(seasonYear, position));
   revalidatePath(overallPath(seasonYear));

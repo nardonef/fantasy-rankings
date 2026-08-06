@@ -20,7 +20,9 @@ import { toast } from "sonner";
 import {
   deletePlayer,
   reorderPlayers,
+  updateTier,
   type PlayerRecord,
+  type PlayerTier,
 } from "@/app/actions/players";
 import type { Position } from "@/lib/positions";
 import { PlayerRow } from "@/components/ranking/player-row";
@@ -97,6 +99,25 @@ export function RankingList({
     setItems((prev) => [...prev, player]);
   }
 
+  function handleTierChange(player: PlayerRecord, tier: PlayerTier | null) {
+    const previous = items;
+    setItems(items.map((p) => (p.id === player.id ? { ...p, tier } : p)));
+
+    startTransition(() => {
+      updateTier({
+        playerId: player.id,
+        seasonYear,
+        position: player.position,
+        tier,
+      }).then((result) => {
+        if (result.error) {
+          setItems(previous);
+          toast.error("Couldn't update tier.");
+        }
+      });
+    });
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
@@ -133,6 +154,7 @@ export function RankingList({
                   rank={index + 1}
                   showPosition={context === "overall"}
                   onDelete={handleDelete}
+                  onTierChange={handleTierChange}
                 />
               ))}
             </div>

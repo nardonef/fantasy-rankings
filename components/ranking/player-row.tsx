@@ -6,18 +6,21 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { PlayerRecord } from "@/app/actions/players";
+import { TierDots } from "@/components/ranking/tier-dots";
+import type { PlayerRecord, PlayerTier } from "@/app/actions/players";
 
 export function PlayerRow({
   player,
   rank,
   showPosition,
   onDelete,
+  onTierChange,
 }: {
   player: PlayerRecord;
   rank: number;
   showPosition: boolean;
   onDelete: (player: PlayerRecord) => void;
+  onTierChange: (player: PlayerRecord, tier: PlayerTier | null) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: player.id });
@@ -68,6 +71,10 @@ export function PlayerRow({
         {rank}
       </span>
       <span className="flex-1 truncate text-sm font-medium">{player.name}</span>
+      <TierDots
+        tier={player.tier}
+        onChange={(tier) => onTierChange(player, tier)}
+      />
       {showPosition && (
         <span className="text-xs font-semibold text-muted-foreground">
           {player.position}
