@@ -26,8 +26,10 @@ import {
   type PlayerTier,
 } from "@/app/actions/players";
 import type { Position } from "@/lib/positions";
+import { matchesSearch } from "@/lib/search";
 import { PlayerRow } from "@/components/ranking/player-row";
 import { AddPlayerDialog } from "@/components/ranking/add-player-dialog";
+import { SearchFilterBar } from "@/components/ranking/search-filter-bar";
 
 export function RankingList({
   context,
@@ -43,7 +45,12 @@ export function RankingList({
   initialPlayers: PlayerRecord[];
 }) {
   const [items, setItems] = useState(initialPlayers);
+  const [query, setQuery] = useState("");
   const [, startTransition] = useTransition();
+  const isFiltering = query.trim().length > 0;
+  const visible = items
+    .map((player, index) => ({ player, rank: index + 1 }))
+    .filter(({ player }) => matchesSearch(query, player.name, player.team));
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, {
@@ -141,20 +148,32 @@ export function RankingList({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
           {items.length} player{items.length === 1 ? "" : "s"}
         </p>
-        <AddPlayerDialog
-          seasonId={seasonId}
-          seasonYear={seasonYear}
-          fixedPosition={context === "position" ? position : undefined}
-          onCreated={handleCreated}
-        />
+        <div className="flex flex-1 items-center justify-end gap-3">
+          <SearchFilterBar value={query} onChange={setQuery} />
+          <AddPlayerDialog
+            seasonId={seasonId}
+            seasonYear={seasonYear}
+            fixedPosition={context === "position" ? position : undefined}
+            onCreated={handleCreated}
+          />
+        </div>
       </div>
+      {isFiltering && (
+        <p className="text-xs text-muted-foreground">
+          Clear search to reorder.
+        </p>
+      )}
       {items.length === 0 ? (
         <p className="rounded-md border border-dashed py-12 text-center text-sm text-muted-foreground">
           No players yet. Add your first one.
+        </p>
+      ) : visible.length === 0 ? (
+        <p className="rounded-md border border-dashed py-12 text-center text-sm text-muted-foreground">
+          No players match &quot;{query.trim()}&quot;.
         </p>
       ) : (
         <DndContext
@@ -164,16 +183,17 @@ export function RankingList({
           onDragEnd={handleDragEnd}
         >
           <SortableContext
-            items={items.map((p) => p.id)}
+            items={visible.map(({ player }) => player.id)}
             strategy={verticalListSortingStrategy}
           >
             <div className="flex flex-col gap-2">
-              {items.map((player, index) => (
+              {visible.map(({ player, rank }) => (
                 <PlayerRow
                   key={player.id}
                   player={player}
-                  rank={index + 1}
+                  rank={rank}
                   showPosition={context === "overall"}
+                  dragDisabled={isFiltering}
                   onDelete={handleDelete}
                   onTierChange={handleTierChange}
                   onNotesChange={handleNotesChange}

@@ -14,6 +14,7 @@ export function PlayerRow({
   player,
   rank,
   showPosition,
+  dragDisabled = false,
   onDelete,
   onTierChange,
   onNotesChange,
@@ -21,12 +22,13 @@ export function PlayerRow({
   player: PlayerRecord;
   rank: number;
   showPosition: boolean;
+  dragDisabled?: boolean;
   onDelete: (player: PlayerRecord) => void;
   onTierChange: (player: PlayerRecord, tier: PlayerTier | null) => void;
   onNotesChange: (player: PlayerRecord, notes: string) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: player.id });
+    useSortable({ id: player.id, disabled: dragDisabled });
   const [confirming, setConfirming] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -63,7 +65,8 @@ export function PlayerRow({
     >
       <button
         type="button"
-        className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
+        disabled={dragDisabled}
+        className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-30"
         aria-label="Drag to reorder"
         {...attributes}
         {...listeners}
