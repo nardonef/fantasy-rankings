@@ -5,6 +5,7 @@ import {
   integer,
   varchar,
   text,
+  boolean,
   timestamp,
   unique,
   index,
@@ -74,6 +75,8 @@ export const players = pgTable("players", {
   overallRank: integer("overall_rank").notNull(),
   tier: playerTierEnum("tier"),
   notes: text("notes"),
+  positionTierBreak: boolean("position_tier_break").notNull().default(false),
+  overallTierBreak: boolean("overall_tier_break").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 }, (table) => [

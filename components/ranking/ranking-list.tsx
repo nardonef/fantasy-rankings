@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { Fragment, useState, useTransition } from "react";
 import {
   DndContext,
   type DragEndEvent,
@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import {
   deletePlayer,
   reorderPlayers,
+  setTierBreak,
   updateNotes,
   updateTier,
   type PlayerRecord,
@@ -27,9 +28,11 @@ import {
 } from "@/app/actions/players";
 import type { Position } from "@/lib/positions";
 import { matchesSearch } from "@/lib/search";
+import { computeTierGroups } from "@/lib/ranking";
 import { PlayerRow } from "@/components/ranking/player-row";
 import { AddPlayerDialog } from "@/components/ranking/add-player-dialog";
 import { SearchFilterBar } from "@/components/ranking/search-filter-bar";
+import { TierDivider } from "@/components/ranking/tier-divider";
 
 export function RankingList({
   context,
@@ -51,6 +54,12 @@ export function RankingList({
   const visible = items
     .map((player, index) => ({ player, rank: index + 1 }))
     .filter(({ player }) => matchesSearch(query, player.name, player.team));
+  const tierBreakField =
+    context === "position" ? "positionTierBreak" : "overallTierBreak";
+  const tierNumbers = isFiltering
+    ? visible.map(() => 1)
+    : computeTierGroups(visible.map(({ player }) => player[tierBreakField]));
+  const showTierDividers = !isFiltering && (tierNumbers.at(-1) ?? 1) > 1;
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, {
@@ -146,6 +155,31 @@ export function RankingList({
     });
   }
 
+  function handleToggleTierBreak(player: PlayerRecord) {
+    const previous = items;
+    const nextValue = !player[tierBreakField];
+    setItems(
+      items.map((p) =>
+        p.id === player.id ? { ...p, [tierBreakField]: nextValue } : p,
+      ),
+    );
+
+    startTransition(() => {
+      setTierBreak({
+        playerId: player.id,
+        seasonYear,
+        context,
+        position,
+        breakAfter: nextValue,
+      }).then((result) => {
+        if (result.error) {
+          setItems(previous);
+          toast.error("Couldn't update tier break.");
+        }
+      });
+    });
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -187,17 +221,25 @@ export function RankingList({
             strategy={verticalListSortingStrategy}
           >
             <div className="flex flex-col gap-2">
-              {visible.map(({ player, rank }) => (
-                <PlayerRow
-                  key={player.id}
-                  player={player}
-                  rank={rank}
-                  showPosition={context === "overall"}
-                  dragDisabled={isFiltering}
-                  onDelete={handleDelete}
-                  onTierChange={handleTierChange}
-                  onNotesChange={handleNotesChange}
-                />
+              {visible.map(({ player, rank }, index) => (
+                <Fragment key={player.id}>
+                  {showTierDividers &&
+                    (index === 0 || tierNumbers[index] !== tierNumbers[index - 1]) && (
+                      <TierDivider tier={tierNumbers[index]} />
+                    )}
+                  <PlayerRow
+                    player={player}
+                    rank={rank}
+                    showPosition={context === "overall"}
+                    dragDisabled={isFiltering}
+                    showTierBreakToggle={!isFiltering && index < visible.length - 1}
+                    tierBreakActive={player[tierBreakField]}
+                    onDelete={handleDelete}
+                    onTierChange={handleTierChange}
+                    onNotesChange={handleNotesChange}
+                    onToggleTierBreak={handleToggleTierBreak}
+                  />
+                </Fragment>
               ))}
             </div>
           </SortableContext>

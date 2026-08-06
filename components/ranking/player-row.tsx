@@ -5,27 +5,41 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { TierDots } from "@/components/ranking/tier-dots";
 import { NotesEditor } from "@/components/ranking/notes-editor";
+import { TierBreakToggle } from "@/components/ranking/tier-break-toggle";
 import type { PlayerRecord, PlayerTier } from "@/app/actions/players";
+
+const FLAG_HIGHLIGHT: Record<PlayerTier, string> = {
+  green: "bg-emerald-500/10 border-l-4 border-l-emerald-500",
+  yellow: "bg-amber-400/10 border-l-4 border-l-amber-400",
+  red: "bg-red-500/10 border-l-4 border-l-red-500",
+};
 
 export function PlayerRow({
   player,
   rank,
   showPosition,
   dragDisabled = false,
+  showTierBreakToggle = false,
+  tierBreakActive = false,
   onDelete,
   onTierChange,
   onNotesChange,
+  onToggleTierBreak,
 }: {
   player: PlayerRecord;
   rank: number;
   showPosition: boolean;
   dragDisabled?: boolean;
+  showTierBreakToggle?: boolean;
+  tierBreakActive?: boolean;
   onDelete: (player: PlayerRecord) => void;
   onTierChange: (player: PlayerRecord, tier: PlayerTier | null) => void;
   onNotesChange: (player: PlayerRecord, notes: string) => void;
+  onToggleTierBreak: (player: PlayerRecord) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: player.id, disabled: dragDisabled });
@@ -60,6 +74,7 @@ export function PlayerRow({
       style={style}
       className={cn(
         "flex items-center gap-3 rounded-md border bg-card px-3 py-2",
+        player.tier && FLAG_HIGHLIGHT[player.tier],
         isDragging && "opacity-50",
       )}
     >
@@ -81,16 +96,18 @@ export function PlayerRow({
         tier={player.tier}
         onChange={(tier) => onTierChange(player, tier)}
       />
-      {showPosition && (
-        <span className="text-xs font-semibold text-muted-foreground">
-          {player.position}
-        </span>
-      )}
-      <span className="text-xs text-muted-foreground">{player.team}</span>
+      {showPosition && <Badge variant="secondary">{player.position}</Badge>}
+      <Badge variant="outline">{player.team}</Badge>
       <NotesEditor
         notes={player.notes}
         onSave={(notes) => onNotesChange(player, notes)}
       />
+      {showTierBreakToggle && (
+        <TierBreakToggle
+          active={tierBreakActive}
+          onToggle={() => onToggleTierBreak(player)}
+        />
+      )}
       <Button
         type="button"
         variant="ghost"

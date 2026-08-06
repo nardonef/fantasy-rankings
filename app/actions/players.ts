@@ -164,6 +164,34 @@ export async function updateNotes(input: {
   return {};
 }
 
+export async function setTierBreak(input: {
+  playerId: number;
+  seasonYear: number;
+  context: "position" | "overall";
+  position?: Position;
+  breakAfter: boolean;
+}): Promise<{ error?: string }> {
+  const { playerId, seasonYear, context, position, breakAfter } = input;
+  const db = getDb();
+
+  await db
+    .update(players)
+    .set(
+      context === "position"
+        ? { positionTierBreak: breakAfter }
+        : { overallTierBreak: breakAfter },
+    )
+    .where(eq(players.id, playerId));
+
+  if (context === "position" && position) {
+    revalidatePath(positionPath(seasonYear, position));
+  } else {
+    revalidatePath(overallPath(seasonYear));
+  }
+
+  return {};
+}
+
 export async function reorderPlayers(input: {
   seasonYear: number;
   context: "position" | "overall";
