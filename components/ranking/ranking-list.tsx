@@ -113,7 +113,12 @@ export function RankingList({
   }
 
   function handleCreated(player: PlayerRecord) {
-    setItems((prev) => [...prev, player]);
+    const belongsInThisView = context === "overall" || player.position === position;
+    if (belongsInThisView) {
+      setItems((prev) => [...prev, player]);
+    } else {
+      toast.success(`Added ${player.name} (${player.position}) — view the ${player.position} tab to see them.`);
+    }
   }
 
   function handleTierChange(player: PlayerRecord, tier: PlayerTier | null) {

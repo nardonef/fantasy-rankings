@@ -66,7 +66,6 @@ export function AddPlayerDialog({
   const suggestions =
     name.trim().length >= 2
       ? catalog
-          .filter((p) => !fixedPosition || p.position === fixedPosition)
           .filter((p) => matchesSearch(name, p.name, p.team ?? ""))
           .slice(0, 50)
       : [];
@@ -75,7 +74,7 @@ export function AddPlayerDialog({
     setName(player.name);
     const team = normalizeTeam(player.team);
     if (team) setTeam(team);
-    if (!fixedPosition) setPosition(player.position);
+    setPosition(player.position);
     setPhotoUrl(player.photoUrl);
     setShowSuggestions(false);
   }
@@ -226,30 +225,26 @@ export function AddPlayerDialog({
                 </SelectContent>
               </Select>
             </div>
-            {fixedPosition ? (
-              <input type="hidden" name="position" value={fixedPosition} />
-            ) : (
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="position">Position</Label>
-                <Select
-                  name="position"
-                  required
-                  value={position}
-                  onValueChange={setPosition}
-                >
-                  <SelectTrigger id="position" className="w-full">
-                    <SelectValue placeholder="Select position" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {playerPositionEnum.enumValues.map((pos) => (
-                      <SelectItem key={pos} value={pos}>
-                        {pos}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="position">Position</Label>
+              <Select
+                name="position"
+                required
+                value={position}
+                onValueChange={setPosition}
+              >
+                <SelectTrigger id="position" className="w-full">
+                  <SelectValue placeholder="Select position" />
+                </SelectTrigger>
+                <SelectContent>
+                  {playerPositionEnum.enumValues.map((pos) => (
+                    <SelectItem key={pos} value={pos}>
+                      {pos}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             {error && (
               <p className="text-sm text-destructive" role="alert">
                 {error}
