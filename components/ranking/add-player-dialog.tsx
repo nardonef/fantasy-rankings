@@ -68,7 +68,7 @@ export function AddPlayerDialog({
       ? catalog
           .filter((p) => !fixedPosition || p.position === fixedPosition)
           .filter((p) => matchesSearch(name, p.name, p.team ?? ""))
-          .slice(0, 6)
+          .slice(0, 50)
       : [];
 
   function selectSuggestion(player: CatalogPlayer) {
@@ -181,7 +181,7 @@ export function AddPlayerDialog({
                   onBlur={() => setShowSuggestions(false)}
                 />
                 {showSuggestions && suggestions.length > 0 && (
-                  <div className="absolute top-full left-0 z-10 mt-1 w-full overflow-hidden rounded-md border bg-popover shadow-md">
+                  <div className="absolute top-full left-0 z-10 mt-1 max-h-64 w-full overflow-y-auto rounded-md border bg-popover shadow-md">
                     {suggestions.map((player) => (
                       <button
                         key={player.sleeperId}
