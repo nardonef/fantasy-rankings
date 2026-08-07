@@ -77,9 +77,19 @@ export const players = pgTable("players", {
   notes: text("notes"),
   positionTierBreak: boolean("position_tier_break").notNull().default(false),
   overallTierBreak: boolean("overall_tier_break").notNull().default(false),
+  photoUrl: text("photo_url"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 }, (table) => [
   index("players_season_position_idx").on(table.seasonId, table.position),
   index("players_season_idx").on(table.seasonId),
 ]);
+
+export const playerCatalog = pgTable("player_catalog", {
+  sleeperId: text("sleeper_id").primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  team: varchar("team", { length: 10 }),
+  position: playerPositionEnum("position").notNull(),
+  photoUrl: text("photo_url"),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});

@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, X } from "lucide-react";
+import { GripVertical, User, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -44,6 +45,7 @@ export function PlayerRow({
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: player.id, disabled: dragDisabled });
   const [confirming, setConfirming] = useState(false);
+  const [photoFailed, setPhotoFailed] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -91,6 +93,20 @@ export function PlayerRow({
       <span className="w-6 text-right text-sm tabular-nums text-muted-foreground">
         {rank}
       </span>
+      {player.photoUrl && !photoFailed ? (
+        <Image
+          src={player.photoUrl}
+          alt=""
+          width={28}
+          height={28}
+          className="size-7 shrink-0 rounded-full object-cover"
+          onError={() => setPhotoFailed(true)}
+        />
+      ) : (
+        <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+          <User className="size-4" />
+        </span>
+      )}
       <span className="flex-1 truncate text-sm font-medium">{player.name}</span>
       <TierDots
         tier={player.tier}

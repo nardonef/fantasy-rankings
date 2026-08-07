@@ -26,6 +26,8 @@ export async function createPlayer(
   const name = formData.get("name");
   const team = formData.get("team");
   const position = formData.get("position");
+  const photoUrlRaw = formData.get("photoUrl");
+  const photoUrl = typeof photoUrlRaw === "string" && photoUrlRaw.length > 0 ? photoUrlRaw : null;
 
   if (
     !Number.isInteger(seasonId) ||
@@ -67,6 +69,7 @@ export async function createPlayer(
       position: position as Position,
       positionRank: positionCount.value + 1,
       overallRank: overallCount.value + 1,
+      photoUrl,
     })
     .returning();
 
