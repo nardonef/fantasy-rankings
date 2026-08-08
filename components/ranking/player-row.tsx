@@ -75,7 +75,7 @@ export function PlayerRow({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "flex items-center gap-3 rounded-md border bg-card px-3 py-2",
+        "flex items-center gap-3 rounded-md border bg-card px-3 py-2.5",
         player.tier && FLAG_HIGHLIGHT[player.tier],
         isDragging && "opacity-50",
       )}
@@ -97,17 +97,17 @@ export function PlayerRow({
         <Image
           src={player.photoUrl}
           alt=""
-          width={28}
-          height={28}
-          className="size-7 shrink-0 rounded-full object-cover"
+          width={32}
+          height={32}
+          className="size-8 shrink-0 rounded-full object-cover"
           onError={() => setPhotoFailed(true)}
         />
       ) : (
-        <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
           <User className="size-4" />
         </span>
       )}
-      <span className="flex-1 truncate text-sm font-medium">{player.name}</span>
+      <span className="flex-1 truncate text-lg font-semibold leading-tight">{player.name}</span>
       <TierDots
         tier={player.tier}
         onChange={(tier) => onTierChange(player, tier)}
