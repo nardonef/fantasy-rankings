@@ -112,7 +112,12 @@ export function PlayerRow({
         tier={player.tier}
         onChange={(tier) => onTierChange(player, tier)}
       />
-      {showPosition && <Badge variant="secondary">{player.position}</Badge>}
+      {showPosition && (
+        <Badge variant="secondary">
+          {player.position}
+          {player.positionRank}
+        </Badge>
+      )}
       <Badge variant="outline">{player.team}</Badge>
       <NotesEditor
         notes={player.notes}
