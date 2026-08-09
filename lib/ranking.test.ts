@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeTierGroups, ranksForOrder } from "./ranking";
+import { computeTierGroups, derivePositionRanks, ranksForOrder } from "./ranking";
 
 describe("ranksForOrder", () => {
   it("assigns sequential 1..N ranks matching the given order", () => {
@@ -46,5 +46,35 @@ describe("computeTierGroups", () => {
 
   it("returns an empty array for an empty input", () => {
     expect(computeTierGroups([])).toEqual([]);
+  });
+});
+
+describe("derivePositionRanks", () => {
+  it("numbers each position independently, starting at 1", () => {
+    const result = derivePositionRanks([
+      { id: 1, position: "RB" },
+      { id: 2, position: "WR" },
+      { id: 3, position: "RB" },
+      { id: 4, position: "QB" },
+    ]);
+    expect(result.get(1)).toBe(1);
+    expect(result.get(2)).toBe(1);
+    expect(result.get(3)).toBe(2);
+    expect(result.get(4)).toBe(1);
+  });
+
+  it("follows the given overall order, not the id values", () => {
+    const result = derivePositionRanks([
+      { id: 30, position: "QB" },
+      { id: 10, position: "QB" },
+      { id: 20, position: "QB" },
+    ]);
+    expect(result.get(30)).toBe(1);
+    expect(result.get(10)).toBe(2);
+    expect(result.get(20)).toBe(3);
+  });
+
+  it("returns an empty map for an empty input", () => {
+    expect(derivePositionRanks([]).size).toBe(0);
   });
 });

@@ -27,6 +27,7 @@ export default async function OverallPage({
       context="overall"
       seasonId={season.id}
       seasonYear={year}
+      positionRankLinked={season.positionRankLinked}
       initialPlayers={allPlayers}
     />
   );

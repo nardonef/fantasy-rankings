@@ -32,6 +32,7 @@ export default async function PositionPage({
       seasonId={season.id}
       seasonYear={year}
       position={position}
+      positionRankLinked={season.positionRankLinked}
       initialPlayers={positionPlayers}
     />
   );

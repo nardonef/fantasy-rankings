@@ -39,18 +39,21 @@ export function RankingList({
   seasonId,
   seasonYear,
   position,
+  positionRankLinked,
   initialPlayers,
 }: {
   context: "position" | "overall";
   seasonId: number;
   seasonYear: number;
   position?: Position;
+  positionRankLinked: boolean;
   initialPlayers: PlayerRecord[];
 }) {
   const [items, setItems] = useState(initialPlayers);
   const [query, setQuery] = useState("");
   const [, startTransition] = useTransition();
   const isFiltering = query.trim().length > 0;
+  const draggable = context === "overall" || !positionRankLinked;
   const visible = items
     .map((player, index) => ({ player, rank: index + 1 }))
     .filter(({ player }) => matchesSearch(query, player.name, player.team));
@@ -83,6 +86,7 @@ export function RankingList({
         seasonYear,
         context,
         position,
+        positionRankLinked,
         orderedIds: next.map((p) => p.id),
       }).then((result) => {
         if (result.error) {
@@ -236,7 +240,8 @@ export function RankingList({
                     player={player}
                     rank={rank}
                     showPosition={context === "overall"}
-                    dragDisabled={isFiltering}
+                    showDragHandle={draggable}
+                    dragDisabled={isFiltering || !draggable}
                     showTierBreakToggle={!isFiltering && index < visible.length - 1}
                     tierBreakActive={player[tierBreakField]}
                     onDelete={handleDelete}

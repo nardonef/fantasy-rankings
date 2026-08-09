@@ -23,6 +23,7 @@ export function PlayerRow({
   player,
   rank,
   showPosition,
+  showDragHandle = true,
   dragDisabled = false,
   showTierBreakToggle = false,
   tierBreakActive = false,
@@ -34,6 +35,7 @@ export function PlayerRow({
   player: PlayerRecord;
   rank: number;
   showPosition: boolean;
+  showDragHandle?: boolean;
   dragDisabled?: boolean;
   showTierBreakToggle?: boolean;
   tierBreakActive?: boolean;
@@ -80,16 +82,18 @@ export function PlayerRow({
         isDragging && "opacity-50",
       )}
     >
-      <button
-        type="button"
-        disabled={dragDisabled}
-        className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-30"
-        aria-label="Drag to reorder"
-        {...attributes}
-        {...listeners}
-      >
-        <GripVertical className="size-4" />
-      </button>
+      {showDragHandle && (
+        <button
+          type="button"
+          disabled={dragDisabled}
+          className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-30"
+          aria-label="Drag to reorder"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="size-4" />
+        </button>
+      )}
       <span className="w-6 text-right text-sm tabular-nums text-muted-foreground">
         {rank}
       </span>

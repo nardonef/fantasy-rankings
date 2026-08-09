@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getDb } from "@/lib/db";
 import { seasons } from "@/lib/db/schema";
 import { SeasonSelector } from "@/components/season/season-selector";
+import { PositionRankLinkToggle } from "@/components/season/position-rank-link-toggle";
 import { NavTabs } from "@/components/nav/nav-tabs";
 import { LogoutButton } from "@/components/auth/logout-button";
 
@@ -33,6 +34,11 @@ export default async function SeasonLayout({
             Fantasy Rankings
           </span>
           <SeasonSelector seasons={allSeasons} currentYear={year} />
+          <PositionRankLinkToggle
+            seasonId={currentSeason.id}
+            seasonYear={year}
+            linked={currentSeason.positionRankLinked}
+          />
         </div>
         <div className="flex items-center gap-4">
           <NavTabs year={year} />

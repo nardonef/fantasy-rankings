@@ -1,11 +1,11 @@
 "use server";
 
-import { and, eq, count } from "drizzle-orm";
+import { and, eq, count, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getDb } from "@/lib/db";
 import { players } from "@/lib/db/schema";
-import { ranksForOrder } from "@/lib/ranking";
-import type { Position } from "@/lib/positions";
+import { derivePositionRanks, ranksForOrder } from "@/lib/ranking";
+import { POSITIONS, type Position } from "@/lib/positions";
 
 export type PlayerRecord = typeof players.$inferSelect;
 export type PlayerTier = NonNullable<PlayerRecord["tier"]>;
@@ -199,21 +199,38 @@ export async function reorderPlayers(input: {
   seasonYear: number;
   context: "position" | "overall";
   position?: Position;
+  positionRankLinked?: boolean;
   orderedIds: number[];
 }): Promise<{ error?: string }> {
-  const { seasonYear, context, position, orderedIds } = input;
+  const { seasonYear, context, position, positionRankLinked, orderedIds } = input;
   if (orderedIds.length === 0) return {};
 
   const db = getDb();
   const ranks = ranksForOrder(orderedIds);
 
-  const updates = ranks.map(({ id, rank }) =>
+  const rankUpdates = ranks.map(({ id, rank }) =>
     db
       .update(players)
       .set(context === "position" ? { positionRank: rank } : { overallRank: rank })
       .where(eq(players.id, id)),
   );
 
+  let derivedUpdates: typeof rankUpdates = [];
+  if (context === "overall" && positionRankLinked) {
+    const rows = await db.query.players.findMany({
+      where: inArray(players.id, orderedIds),
+      columns: { id: true, position: true },
+    });
+    const positionById = new Map(rows.map((r) => [r.id, r.position]));
+    const derived = derivePositionRanks(
+      orderedIds.map((id) => ({ id, position: positionById.get(id)! })),
+    );
+    derivedUpdates = Array.from(derived, ([id, rank]) =>
+      db.update(players).set({ positionRank: rank }).where(eq(players.id, id)),
+    );
+  }
+
+  const updates = [...rankUpdates, ...derivedUpdates];
   const [first, ...rest] = updates;
   await db.batch([first, ...rest]);
 
@@ -221,6 +238,9 @@ export async function reorderPlayers(input: {
     revalidatePath(positionPath(seasonYear, position));
   } else {
     revalidatePath(overallPath(seasonYear));
+    if (positionRankLinked) {
+      for (const p of POSITIONS) revalidatePath(positionPath(seasonYear, p));
+    }
   }
 
   return {};

@@ -2,8 +2,11 @@
 
 import { eq, asc } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { getDb } from "@/lib/db";
 import { players, seasons } from "@/lib/db/schema";
+import { derivePositionRanks } from "@/lib/ranking";
+import { POSITIONS } from "@/lib/positions";
 
 export async function createSeason(
   _prevState: { error?: string } | undefined,
@@ -26,13 +29,22 @@ export async function createSeason(
     return { error: `A ${year} season already exists.` };
   }
 
-  const [newSeason] = await db.insert(seasons).values({ year }).returning();
+  const hasCopySource =
+    typeof copyFromSeasonIdRaw === "string" && copyFromSeasonIdRaw.length > 0;
+  const copyFromSeasonId = hasCopySource ? Number(copyFromSeasonIdRaw) : null;
+  const sourceSeason = copyFromSeasonId
+    ? await db.query.seasons.findFirst({ where: eq(seasons.id, copyFromSeasonId) })
+    : null;
 
-  if (
-    typeof copyFromSeasonIdRaw === "string" &&
-    copyFromSeasonIdRaw.length > 0
-  ) {
-    const copyFromSeasonId = Number(copyFromSeasonIdRaw);
+  const [newSeason] = await db
+    .insert(seasons)
+    .values({
+      year,
+      ...(sourceSeason ? { positionRankLinked: sourceSeason.positionRankLinked } : {}),
+    })
+    .returning();
+
+  if (copyFromSeasonId) {
     const sourcePlayers = await db.query.players.findMany({
       where: eq(players.seasonId, copyFromSeasonId),
       orderBy: [asc(players.overallRank)],
@@ -55,4 +67,53 @@ export async function createSeason(
   }
 
   redirect(`/${newSeason.year}/overall`);
+}
+
+export async function setPositionRankLinked(input: {
+  seasonId: number;
+  seasonYear: number;
+  linked: boolean;
+}): Promise<{ error?: string }> {
+  const { seasonId, seasonYear, linked } = input;
+  const db = getDb();
+
+  if (linked) {
+    const seasonPlayers = await db.query.players.findMany({
+      where: eq(players.seasonId, seasonId),
+      orderBy: [asc(players.overallRank)],
+    });
+    const derived = derivePositionRanks(seasonPlayers);
+
+    const rankUpdates = seasonPlayers
+      .filter((p) => derived.get(p.id) !== p.positionRank)
+      .map((p) =>
+        db
+          .update(players)
+          .set({ positionRank: derived.get(p.id)! })
+          .where(eq(players.id, p.id)),
+      );
+    const flagUpdate = db
+      .update(seasons)
+      .set({ positionRankLinked: true })
+      .where(eq(seasons.id, seasonId));
+
+    if (rankUpdates.length === 0) {
+      await flagUpdate;
+    } else {
+      const [first, ...rest] = rankUpdates;
+      await db.batch([flagUpdate, first, ...rest]);
+    }
+  } else {
+    await db
+      .update(seasons)
+      .set({ positionRankLinked: false })
+      .where(eq(seasons.id, seasonId));
+  }
+
+  revalidatePath(`/${seasonYear}/overall`);
+  for (const position of POSITIONS) {
+    revalidatePath(`/${seasonYear}/${position.toLowerCase()}`);
+  }
+
+  return {};
 }

@@ -58,6 +58,7 @@ export const playerTierEnum = pgEnum("player_tier", ["green", "yellow", "red"]);
 export const seasons = pgTable("seasons", {
   id: serial("id").primaryKey(),
   year: integer("year").notNull(),
+  positionRankLinked: boolean("position_rank_linked").notNull().default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (table) => [
   unique("seasons_year_unique").on(table.year),

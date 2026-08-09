@@ -68,7 +68,7 @@ describe("createPlayer", () => {
   });
 });
 
-describe("reorderPlayers cross-independence", () => {
+describe("reorderPlayers", () => {
   it("reordering in position context only touches positionRank, not overallRank or other positions", async () => {
     const qb1 = await addPlayer(seasonId, "QB One", "QB");
     const qb2 = await addPlayer(seasonId, "QB Two", "QB");
@@ -96,13 +96,14 @@ describe("reorderPlayers cross-independence", () => {
     expect(byId.get(rb1.id)!.positionRank).toBe(1);
   });
 
-  it("reordering in overall context only touches overallRank, not any positionRank", async () => {
+  it("reordering in overall context leaves positionRank untouched when the season is unlinked", async () => {
     const qb1 = await addPlayer(seasonId, "QB One", "QB");
     const rb1 = await addPlayer(seasonId, "RB One", "RB");
 
     await reorderPlayers({
       seasonYear: TEST_YEAR,
       context: "overall",
+      positionRankLinked: false,
       orderedIds: [rb1.id, qb1.id],
     });
 
@@ -114,9 +115,39 @@ describe("reorderPlayers cross-independence", () => {
 
     expect(byId.get(rb1.id)!.overallRank).toBe(1);
     expect(byId.get(qb1.id)!.overallRank).toBe(2);
-    // positionRank untouched by an overall-context reorder
+    // positionRank untouched when unlinked
     expect(byId.get(qb1.id)!.positionRank).toBe(qb1.positionRank);
     expect(byId.get(rb1.id)!.positionRank).toBe(rb1.positionRank);
+  });
+
+  it("reordering in overall context also re-derives positionRank when the season is linked", async () => {
+    const rb1 = await addPlayer(seasonId, "RB One", "RB");
+    const rb2 = await addPlayer(seasonId, "RB Two", "RB");
+    const qb1 = await addPlayer(seasonId, "QB One", "QB");
+    // initial overall order: rb1, rb2, qb1 -> positionRank rb1=1, rb2=2, qb1=1
+    expect(rb1.positionRank).toBe(1);
+    expect(rb2.positionRank).toBe(2);
+
+    await reorderPlayers({
+      seasonYear: TEST_YEAR,
+      context: "overall",
+      positionRankLinked: true,
+      orderedIds: [rb2.id, rb1.id, qb1.id], // swap the two RBs
+    });
+
+    const rows = await db.query.players.findMany({
+      where: eq(players.seasonId, seasonId),
+      orderBy: [asc(players.id)],
+    });
+    const byId = new Map(rows.map((r) => [r.id, r]));
+
+    expect(byId.get(rb2.id)!.overallRank).toBe(1);
+    expect(byId.get(rb1.id)!.overallRank).toBe(2);
+    expect(byId.get(qb1.id)!.overallRank).toBe(3);
+    // positionRank re-derived to match the new overall order
+    expect(byId.get(rb2.id)!.positionRank).toBe(1);
+    expect(byId.get(rb1.id)!.positionRank).toBe(2);
+    expect(byId.get(qb1.id)!.positionRank).toBe(1);
   });
 });
 
