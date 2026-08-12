@@ -16,7 +16,7 @@ export function NavTabs({ year }: { year: number }) {
   const pathname = usePathname();
 
   return (
-    <nav className="flex items-center gap-1">
+    <nav className="flex min-w-0 items-center gap-1 overflow-x-auto">
       {TABS.map((tab) => {
         const href = `/${year}/${tab.segment}`;
         const active = pathname === href;
@@ -25,7 +25,7 @@ export function NavTabs({ year }: { year: number }) {
             key={tab.segment}
             href={href}
             className={cn(
-              "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+              "shrink-0 rounded-md px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors",
               active
                 ? "bg-foreground text-background"
                 : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
