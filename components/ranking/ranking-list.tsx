@@ -28,7 +28,7 @@ import {
 } from "@/app/actions/players";
 import type { Position } from "@/lib/positions";
 import { matchesSearch } from "@/lib/search";
-import { computeTierGroups } from "@/lib/ranking";
+import { computeTierGroups, derivePositionRanks } from "@/lib/ranking";
 import { PlayerRow } from "@/components/ranking/player-row";
 import { AddPlayerDialog } from "@/components/ranking/add-player-dialog";
 import { SearchFilterBar } from "@/components/ranking/search-filter-bar";
@@ -78,7 +78,13 @@ export function RankingList({
     if (oldIndex === -1 || newIndex === -1) return;
 
     const previous = items;
-    const next = arrayMove(items, oldIndex, newIndex);
+    let next = arrayMove(items, oldIndex, newIndex);
+    if (context === "overall" && positionRankLinked) {
+      const derived = derivePositionRanks(
+        next.map((p) => ({ id: p.id, position: p.position })),
+      );
+      next = next.map((p) => ({ ...p, positionRank: derived.get(p.id)! }));
+    }
     setItems(next);
 
     startTransition(() => {
