@@ -35,11 +35,16 @@ export function PositionRankLinkToggle({
           : "Position ranks are independent of the overall order. Click to derive them from overall instead."
       }
     >
-      {isPending
-        ? "Updating…"
-        : linked
-          ? "Position ranks: linked"
-          : "Position ranks: independent"}
+      <span className="sm:hidden">
+        {isPending ? "Updating…" : linked ? "Linked" : "Independent"}
+      </span>
+      <span className="hidden sm:inline">
+        {isPending
+          ? "Updating…"
+          : linked
+            ? "Position ranks: linked"
+            : "Position ranks: independent"}
+      </span>
     </Button>
   );
 }

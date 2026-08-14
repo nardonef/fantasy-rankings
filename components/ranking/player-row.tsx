@@ -77,71 +77,75 @@ export function PlayerRow({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "flex items-center gap-3 rounded-md border bg-card px-3 py-2.5",
+        "flex flex-col gap-2 rounded-md border bg-card px-3 py-2.5 sm:flex-row sm:items-center sm:gap-3",
         player.tier && FLAG_HIGHLIGHT[player.tier],
         isDragging && "opacity-50",
       )}
     >
-      {showDragHandle && (
-        <button
-          type="button"
-          disabled={dragDisabled}
-          className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-30"
-          aria-label="Drag to reorder"
-          {...attributes}
-          {...listeners}
-        >
-          <GripVertical className="size-4" />
-        </button>
-      )}
-      <span className="w-6 text-right text-sm tabular-nums text-muted-foreground">
-        {rank}
-      </span>
-      {player.photoUrl && !photoFailed ? (
-        <Image
-          src={player.photoUrl}
-          alt=""
-          width={32}
-          height={32}
-          className="size-8 shrink-0 rounded-full object-cover"
-          onError={() => setPhotoFailed(true)}
-        />
-      ) : (
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-          <User className="size-4" />
+      <div className="flex items-center gap-3 sm:contents">
+        {showDragHandle && (
+          <button
+            type="button"
+            disabled={dragDisabled}
+            className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-30"
+            aria-label="Drag to reorder"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical className="size-4" />
+          </button>
+        )}
+        <span className="w-6 text-right text-sm tabular-nums text-muted-foreground">
+          {rank}
         </span>
-      )}
-      <span className="flex-1 truncate text-lg font-semibold leading-tight">{player.name}</span>
-      <TierDots
-        tier={player.tier}
-        onChange={(tier) => onTierChange(player, tier)}
-      />
-      {showPosition && (
-        <Badge variant="secondary">
-          {player.position}
-          {player.positionRank}
-        </Badge>
-      )}
-      <Badge variant="outline">{player.team}</Badge>
-      <NotesEditor
-        notes={player.notes}
-        onSave={(notes) => onNotesChange(player, notes)}
-      />
-      {showTierBreakToggle && (
-        <TierBreakToggle
-          active={tierBreakActive}
-          onToggle={() => onToggleTierBreak(player)}
+        {player.photoUrl && !photoFailed ? (
+          <Image
+            src={player.photoUrl}
+            alt=""
+            width={32}
+            height={32}
+            className="size-8 shrink-0 rounded-full object-cover"
+            onError={() => setPhotoFailed(true)}
+          />
+        ) : (
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+            <User className="size-4" />
+          </span>
+        )}
+        <span className="min-w-0 flex-1 truncate text-lg font-semibold leading-tight">{player.name}</span>
+      </div>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 sm:contents">
+        <TierDots
+          tier={player.tier}
+          onChange={(tier) => onTierChange(player, tier)}
         />
-      )}
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        onClick={handleDeleteClick}
-        className={confirming ? "text-destructive" : "text-muted-foreground"}
-      >
-        {confirming ? "Confirm?" : <X className="size-4" />}
-      </Button>
+        {showPosition && (
+          <Badge variant="secondary">
+            {player.position}
+            {player.positionRank}
+          </Badge>
+        )}
+        <Badge variant="outline">{player.team}</Badge>
+        <NotesEditor
+          notes={player.notes}
+          onSave={(notes) => onNotesChange(player, notes)}
+        />
+        {showTierBreakToggle && (
+          <TierBreakToggle
+            active={tierBreakActive}
+            onToggle={() => onToggleTierBreak(player)}
+          />
+        )}
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={handleDeleteClick}
+          className={cn("ml-auto sm:ml-0", confirming ? "text-destructive" : "text-muted-foreground")}
+        >
+          {confirming ? "Confirm?" : <X className="size-4" />}
+        </Button>
+      </div>
     </div>
   );
 }
