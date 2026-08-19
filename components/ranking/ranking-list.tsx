@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState, useTransition } from "react";
+import { Fragment, useRef, useState, useTransition } from "react";
 import {
   DndContext,
   type DragEndEvent,
@@ -52,6 +52,7 @@ export function RankingList({
   const [items, setItems] = useState(initialPlayers);
   const [query, setQuery] = useState("");
   const [, startTransition] = useTransition();
+  const undoToastId = useRef<string | number | null>(null);
   const isFiltering = query.trim().length > 0;
   const draggable = context === "overall" || !positionRankLinked;
   const visible = items
@@ -70,6 +71,43 @@ export function RankingList({
     }),
   );
 
+  function clearPendingUndo() {
+    if (undoToastId.current !== null) {
+      toast.dismiss(undoToastId.current);
+      undoToastId.current = null;
+    }
+  }
+
+  function offerUndo(
+    message: string,
+    previous: PlayerRecord[],
+    persist: (state: PlayerRecord[]) => Promise<{ error?: string }>,
+  ) {
+    undoToastId.current = toast(message, {
+      action: {
+        label: "Undo",
+        onClick: () => {
+          undoToastId.current = null;
+          setItems(previous);
+          startTransition(() => {
+            persist(previous).then((result) => {
+              if (result.error) {
+                toast.error("Couldn't undo — refresh to resync.");
+              }
+            });
+          });
+        },
+      },
+      duration: 6000,
+      onAutoClose: () => {
+        undoToastId.current = null;
+      },
+      onDismiss: () => {
+        undoToastId.current = null;
+      },
+    });
+  }
+
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -77,6 +115,7 @@ export function RankingList({
     const newIndex = items.findIndex((p) => p.id === over.id);
     if (oldIndex === -1 || newIndex === -1) return;
 
+    clearPendingUndo();
     const previous = items;
     let next = arrayMove(items, oldIndex, newIndex);
     if (context === "overall" && positionRankLinked) {
@@ -98,12 +137,23 @@ export function RankingList({
         if (result.error) {
           setItems(previous);
           toast.error("Couldn't save the new order.");
+          return;
         }
+        offerUndo("Order updated.", previous, (state) =>
+          reorderPlayers({
+            seasonYear,
+            context,
+            position,
+            positionRankLinked,
+            orderedIds: state.map((p) => p.id),
+          }),
+        );
       });
     });
   }
 
   function handleDelete(player: PlayerRecord) {
+    clearPendingUndo();
     const previous = items;
     setItems(items.filter((p) => p.id !== player.id));
 
@@ -123,6 +173,7 @@ export function RankingList({
   }
 
   function handleCreated(player: PlayerRecord) {
+    clearPendingUndo();
     const belongsInThisView = context === "overall" || player.position === position;
     if (belongsInThisView) {
       setItems((prev) => [...prev, player]);
@@ -132,7 +183,9 @@ export function RankingList({
   }
 
   function handleTierChange(player: PlayerRecord, tier: PlayerTier | null) {
+    clearPendingUndo();
     const previous = items;
+    const previousTier = player.tier;
     setItems(items.map((p) => (p.id === player.id ? { ...p, tier } : p)));
 
     startTransition(() => {
@@ -145,12 +198,22 @@ export function RankingList({
         if (result.error) {
           setItems(previous);
           toast.error("Couldn't update tier.");
+          return;
         }
+        offerUndo(`Tier updated for ${player.name}.`, previous, () =>
+          updateTier({
+            playerId: player.id,
+            seasonYear,
+            position: player.position,
+            tier: previousTier,
+          }),
+        );
       });
     });
   }
 
   function handleNotesChange(player: PlayerRecord, notes: string) {
+    clearPendingUndo();
     const previous = items;
     const nextNotes = notes.length > 0 ? notes : null;
     setItems(items.map((p) => (p.id === player.id ? { ...p, notes: nextNotes } : p)));
@@ -171,6 +234,7 @@ export function RankingList({
   }
 
   function handleToggleTierBreak(player: PlayerRecord) {
+    clearPendingUndo();
     const previous = items;
     const nextValue = !player[tierBreakField];
     setItems(
