@@ -86,6 +86,33 @@ export const players = pgTable("players", {
   index("players_season_idx").on(table.seasonId),
 ]);
 
+export const draftSessions = pgTable("draft_sessions", {
+  id: serial("id").primaryKey(),
+  seasonId: integer("season_id")
+    .notNull()
+    .references(() => seasons.id, { onDelete: "cascade" }),
+  startedAt: timestamp("started_at").notNull().defaultNow(),
+}, (table) => [
+  unique("draft_sessions_season_unique").on(table.seasonId),
+]);
+
+export const draftedPlayers = pgTable("drafted_players", {
+  id: serial("id").primaryKey(),
+  draftSessionId: integer("draft_session_id")
+    .notNull()
+    .references(() => draftSessions.id, { onDelete: "cascade" }),
+  playerId: integer("player_id")
+    .notNull()
+    .references(() => players.id, { onDelete: "cascade" }),
+  position: playerPositionEnum("position").notNull(),
+  overallRank: integer("overall_rank").notNull(),
+  positionRank: integer("position_rank").notNull(),
+  draftedAt: timestamp("drafted_at"),
+}, (table) => [
+  unique("drafted_players_session_player_unique").on(table.draftSessionId, table.playerId),
+  index("drafted_players_session_idx").on(table.draftSessionId),
+]);
+
 export const playerCatalog = pgTable("player_catalog", {
   sleeperId: text("sleeper_id").primaryKey(),
   name: varchar("name", { length: 100 }).notNull(),

@@ -13,7 +13,7 @@ import { NotesEditor } from "@/components/ranking/notes-editor";
 import { TierBreakToggle } from "@/components/ranking/tier-break-toggle";
 import type { PlayerRecord, PlayerTier } from "@/app/actions/players";
 
-const FLAG_HIGHLIGHT: Record<PlayerTier, string> = {
+export const FLAG_HIGHLIGHT: Record<PlayerTier, string> = {
   green: "bg-emerald-500/10 border-l-4 border-l-emerald-500",
   yellow: "bg-amber-400/10 border-l-4 border-l-amber-400",
   red: "bg-red-500/10 border-l-4 border-l-red-500",
