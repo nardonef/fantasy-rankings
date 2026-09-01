@@ -55,6 +55,17 @@ export const playerPositionEnum = pgEnum("player_position", [
 
 export const playerTierEnum = pgEnum("player_tier", ["green", "yellow", "red"]);
 
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  clerkUserId: text("clerk_user_id").notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
+  name: varchar("name", { length: 100 }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => [
+  unique("users_clerk_user_id_unique").on(table.clerkUserId),
+]);
+
 export const seasons = pgTable("seasons", {
   id: serial("id").primaryKey(),
   year: integer("year").notNull(),
@@ -69,6 +80,11 @@ export const players = pgTable("players", {
   seasonId: integer("season_id")
     .notNull()
     .references(() => seasons.id, { onDelete: "cascade" }),
+  // Nullable until the pre-multi-user backfill runs; make NOT NULL in a follow-up migration once every row is owned.
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }),
+  sleeperId: text("sleeper_id").references(() => playerCatalog.sleeperId, {
+    onDelete: "set null",
+  }),
   name: varchar("name", { length: 100 }).notNull(),
   team: nflTeamEnum("team").notNull(),
   position: playerPositionEnum("position").notNull(),
@@ -84,6 +100,7 @@ export const players = pgTable("players", {
 }, (table) => [
   index("players_season_position_idx").on(table.seasonId, table.position),
   index("players_season_idx").on(table.seasonId),
+  index("players_season_user_idx").on(table.seasonId, table.userId),
 ]);
 
 export const draftSessions = pgTable("draft_sessions", {
@@ -91,9 +108,11 @@ export const draftSessions = pgTable("draft_sessions", {
   seasonId: integer("season_id")
     .notNull()
     .references(() => seasons.id, { onDelete: "cascade" }),
+  // Nullable until the pre-multi-user backfill runs; make NOT NULL in a follow-up migration once every row is owned.
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }),
   startedAt: timestamp("started_at").notNull().defaultNow(),
 }, (table) => [
-  unique("draft_sessions_season_unique").on(table.seasonId),
+  unique("draft_sessions_season_user_unique").on(table.seasonId, table.userId),
 ]);
 
 export const draftedPlayers = pgTable("drafted_players", {
@@ -111,6 +130,21 @@ export const draftedPlayers = pgTable("drafted_players", {
 }, (table) => [
   unique("drafted_players_session_player_unique").on(table.draftSessionId, table.playerId),
   index("drafted_players_session_idx").on(table.draftSessionId),
+]);
+
+// Marks that a user has passed through the starting-rankings picker for a season,
+// even if they chose to start blank (which otherwise leaves no players rows to detect).
+export const seasonStarts = pgTable("season_starts", {
+  id: serial("id").primaryKey(),
+  seasonId: integer("season_id")
+    .notNull()
+    .references(() => seasons.id, { onDelete: "cascade" }),
+  userId: integer("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => [
+  unique("season_starts_season_user_unique").on(table.seasonId, table.userId),
 ]);
 
 export const playerCatalog = pgTable("player_catalog", {

@@ -1,7 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { asc, eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { players, seasons } from "@/lib/db/schema";
+import { players, seasons, users } from "@/lib/db/schema";
+import { createTestUser } from "@/lib/test/fixtures";
+import { currentUserId } from "@/lib/auth/current-user";
 import {
   createPlayer,
   deletePlayer,
@@ -11,6 +13,7 @@ import {
 } from "./players";
 
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
+vi.mock("@/lib/auth/current-user", () => ({ currentUserId: vi.fn() }));
 
 const TEST_YEAR = 2091;
 const db = getDb();
@@ -42,14 +45,20 @@ async function addPlayer(
 }
 
 let seasonId: number;
+let userId: number;
 
 beforeEach(async () => {
+  const user = await createTestUser();
+  userId = user.id;
+  vi.mocked(currentUserId).mockResolvedValue(userId);
+
   const [season] = await db.insert(seasons).values({ year: TEST_YEAR }).returning();
   seasonId = season.id;
 });
 
 afterEach(async () => {
   await db.delete(seasons).where(eq(seasons.id, seasonId));
+  await db.delete(users).where(eq(users.id, userId));
 });
 
 describe("createPlayer", () => {

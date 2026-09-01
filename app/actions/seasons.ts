@@ -1,12 +1,13 @@
 "use server";
 
-import { eq, asc } from "drizzle-orm";
+import { and, eq, asc } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getDb } from "@/lib/db";
 import { players, seasons } from "@/lib/db/schema";
 import { derivePositionRanks } from "@/lib/ranking";
 import { POSITIONS } from "@/lib/positions";
+import { currentUserId } from "@/lib/auth/current-user";
 
 export async function createSeason(
   _prevState: { error?: string } | undefined,
@@ -45,8 +46,9 @@ export async function createSeason(
     .returning();
 
   if (copyFromSeasonId) {
+    const userId = await currentUserId();
     const sourcePlayers = await db.query.players.findMany({
-      where: eq(players.seasonId, copyFromSeasonId),
+      where: and(eq(players.seasonId, copyFromSeasonId), eq(players.userId, userId)),
       orderBy: [asc(players.overallRank)],
     });
 
@@ -54,6 +56,8 @@ export async function createSeason(
       await db.insert(players).values(
         sourcePlayers.map((player) => ({
           seasonId: newSeason.id,
+          userId,
+          sleeperId: player.sleeperId,
           name: player.name,
           team: player.team,
           position: player.position,
@@ -76,10 +80,11 @@ export async function setPositionRankLinked(input: {
 }): Promise<{ error?: string }> {
   const { seasonId, seasonYear, linked } = input;
   const db = getDb();
+  const userId = await currentUserId();
 
   if (linked) {
     const seasonPlayers = await db.query.players.findMany({
-      where: eq(players.seasonId, seasonId),
+      where: and(eq(players.seasonId, seasonId), eq(players.userId, userId)),
       orderBy: [asc(players.overallRank)],
     });
     const derived = derivePositionRanks(seasonPlayers);
@@ -90,7 +95,7 @@ export async function setPositionRankLinked(input: {
         db
           .update(players)
           .set({ positionRank: derived.get(p.id)! })
-          .where(eq(players.id, p.id)),
+          .where(and(eq(players.id, p.id), eq(players.userId, userId))),
       );
     const flagUpdate = db
       .update(seasons)

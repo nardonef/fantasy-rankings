@@ -6,6 +6,7 @@ import { getDb } from "@/lib/db";
 import { players } from "@/lib/db/schema";
 import { derivePositionRanks, ranksForOrder } from "@/lib/ranking";
 import { POSITIONS, type Position } from "@/lib/positions";
+import { currentUserId } from "@/lib/auth/current-user";
 
 export type PlayerRecord = typeof players.$inferSelect;
 export type PlayerTier = NonNullable<PlayerRecord["tier"]>;
@@ -43,6 +44,7 @@ export async function createPlayer(
   }
 
   const db = getDb();
+  const userId = await currentUserId();
 
   const [[positionCount], [overallCount]] = await Promise.all([
     db
@@ -51,19 +53,21 @@ export async function createPlayer(
       .where(
         and(
           eq(players.seasonId, seasonId),
+          eq(players.userId, userId),
           eq(players.position, position as Position),
         ),
       ),
     db
       .select({ value: count() })
       .from(players)
-      .where(eq(players.seasonId, seasonId)),
+      .where(and(eq(players.seasonId, seasonId), eq(players.userId, userId))),
   ]);
 
   const [created] = await db
     .insert(players)
     .values({
       seasonId,
+      userId,
       name: name.trim(),
       team: team as PlayerRecord["team"],
       position: position as Position,
@@ -87,14 +91,19 @@ export async function deletePlayer(input: {
 }): Promise<{ error?: string }> {
   const { playerId, seasonId, seasonYear, position } = input;
   const db = getDb();
+  const userId = await currentUserId();
 
   const [remainingInPosition, remainingOverall] = await Promise.all([
     db.query.players.findMany({
-      where: and(eq(players.seasonId, seasonId), eq(players.position, position)),
+      where: and(
+        eq(players.seasonId, seasonId),
+        eq(players.userId, userId),
+        eq(players.position, position),
+      ),
       orderBy: (p, { asc }) => [asc(p.positionRank)],
     }),
     db.query.players.findMany({
-      where: eq(players.seasonId, seasonId),
+      where: and(eq(players.seasonId, seasonId), eq(players.userId, userId)),
       orderBy: (p, { asc }) => [asc(p.overallRank)],
     }),
   ]);
@@ -115,7 +124,9 @@ export async function deletePlayer(input: {
     ),
   ];
 
-  const deleteStmt = db.delete(players).where(eq(players.id, playerId));
+  const deleteStmt = db
+    .delete(players)
+    .where(and(eq(players.id, playerId), eq(players.userId, userId)));
 
   if (updates.length === 0) {
     await deleteStmt;
@@ -138,8 +149,12 @@ export async function updateTier(input: {
 }): Promise<{ error?: string }> {
   const { playerId, seasonYear, position, tier } = input;
   const db = getDb();
+  const userId = await currentUserId();
 
-  await db.update(players).set({ tier }).where(eq(players.id, playerId));
+  await db
+    .update(players)
+    .set({ tier })
+    .where(and(eq(players.id, playerId), eq(players.userId, userId)));
 
   revalidatePath(positionPath(seasonYear, position));
   revalidatePath(overallPath(seasonYear));
@@ -155,11 +170,12 @@ export async function updateNotes(input: {
 }): Promise<{ error?: string }> {
   const { playerId, seasonYear, position, notes } = input;
   const db = getDb();
+  const userId = await currentUserId();
 
   await db
     .update(players)
     .set({ notes: notes.length > 0 ? notes : null })
-    .where(eq(players.id, playerId));
+    .where(and(eq(players.id, playerId), eq(players.userId, userId)));
 
   revalidatePath(positionPath(seasonYear, position));
   revalidatePath(overallPath(seasonYear));
@@ -176,6 +192,7 @@ export async function setTierBreak(input: {
 }): Promise<{ error?: string }> {
   const { playerId, seasonYear, context, position, breakAfter } = input;
   const db = getDb();
+  const userId = await currentUserId();
 
   await db
     .update(players)
@@ -184,7 +201,7 @@ export async function setTierBreak(input: {
         ? { positionTierBreak: breakAfter }
         : { overallTierBreak: breakAfter },
     )
-    .where(eq(players.id, playerId));
+    .where(and(eq(players.id, playerId), eq(players.userId, userId)));
 
   if (context === "position" && position) {
     revalidatePath(positionPath(seasonYear, position));
@@ -206,19 +223,20 @@ export async function reorderPlayers(input: {
   if (orderedIds.length === 0) return {};
 
   const db = getDb();
+  const userId = await currentUserId();
   const ranks = ranksForOrder(orderedIds);
 
   const rankUpdates = ranks.map(({ id, rank }) =>
     db
       .update(players)
       .set(context === "position" ? { positionRank: rank } : { overallRank: rank })
-      .where(eq(players.id, id)),
+      .where(and(eq(players.id, id), eq(players.userId, userId))),
   );
 
   let derivedUpdates: typeof rankUpdates = [];
   if (context === "overall" && positionRankLinked) {
     const rows = await db.query.players.findMany({
-      where: inArray(players.id, orderedIds),
+      where: and(inArray(players.id, orderedIds), eq(players.userId, userId)),
       columns: { id: true, position: true },
     });
     const positionById = new Map(rows.map((r) => [r.id, r.position]));
@@ -226,7 +244,10 @@ export async function reorderPlayers(input: {
       orderedIds.map((id) => ({ id, position: positionById.get(id)! })),
     );
     derivedUpdates = Array.from(derived, ([id, rank]) =>
-      db.update(players).set({ positionRank: rank }).where(eq(players.id, id)),
+      db
+        .update(players)
+        .set({ positionRank: rank })
+        .where(and(eq(players.id, id), eq(players.userId, userId))),
     );
   }
 

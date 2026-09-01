@@ -3,6 +3,7 @@ import { getDb } from "@/lib/db";
 import { draftedPlayers, draftSessions, players } from "@/lib/db/schema";
 import type { PlayerRecord } from "@/app/actions/players";
 import type { Position } from "@/lib/positions";
+import { currentUserId } from "@/lib/auth/current-user";
 
 export type DraftPlayerRecord = {
   draftedPlayerId: number;
@@ -15,8 +16,9 @@ export type DraftPlayerRecord = {
 
 export async function getDraftSession(seasonId: number) {
   const db = getDb();
+  const userId = await currentUserId();
   return db.query.draftSessions.findFirst({
-    where: eq(draftSessions.seasonId, seasonId),
+    where: and(eq(draftSessions.seasonId, seasonId), eq(draftSessions.userId, userId)),
   });
 }
 

@@ -1,11 +1,11 @@
 import { desc, eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
+import { UserButton } from "@clerk/nextjs";
 import { getDb } from "@/lib/db";
 import { seasons } from "@/lib/db/schema";
 import { SeasonSelector } from "@/components/season/season-selector";
 import { PositionRankLinkToggle } from "@/components/season/position-rank-link-toggle";
 import { NavTabs } from "@/components/nav/nav-tabs";
-import { LogoutButton } from "@/components/auth/logout-button";
 
 export default async function SeasonLayout({
   children,
@@ -42,7 +42,7 @@ export default async function SeasonLayout({
         </div>
         <div className="flex items-center gap-4">
           <NavTabs year={year} />
-          <LogoutButton />
+          <UserButton />
         </div>
       </header>
       <main className="flex-1 px-4 py-6 sm:px-6">{children}</main>
