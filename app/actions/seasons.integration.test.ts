@@ -1,11 +1,14 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { asc, eq } from "drizzle-orm";
 import { getDb } from "@/lib/db";
-import { players, seasons } from "@/lib/db/schema";
+import { players, seasons, users } from "@/lib/db/schema";
+import { createTestUser } from "@/lib/test/fixtures";
+import { currentUserId } from "@/lib/auth/current-user";
 import { createSeason, setPositionRankLinked } from "./seasons";
 
 vi.mock("next/navigation", () => ({ redirect: vi.fn() }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
+vi.mock("@/lib/auth/current-user", () => ({ currentUserId: vi.fn() }));
 
 const SOURCE_YEAR = 2092;
 const NEW_YEAR = 2093;
@@ -13,12 +16,20 @@ const DUPLICATE_YEAR = 2094;
 const db = getDb();
 
 const createdSeasonIds: number[] = [];
+let userId: number;
+
+beforeEach(async () => {
+  const user = await createTestUser();
+  userId = user.id;
+  vi.mocked(currentUserId).mockResolvedValue(userId);
+});
 
 afterEach(async () => {
   while (createdSeasonIds.length > 0) {
     const id = createdSeasonIds.pop()!;
     await db.delete(seasons).where(eq(seasons.id, id));
   }
+  await db.delete(users).where(eq(users.id, userId));
 });
 
 describe("seasons schema constraints", () => {
@@ -71,6 +82,7 @@ describe("createSeason with copy-from-previous", () => {
     await db.insert(players).values([
       {
         seasonId: sourceSeason.id,
+        userId,
         name: "Clone Source One",
         team: "BUF",
         position: "QB",
@@ -81,6 +93,7 @@ describe("createSeason with copy-from-previous", () => {
       },
       {
         seasonId: sourceSeason.id,
+        userId,
         name: "Clone Source Two",
         team: "KC",
         position: "QB",
@@ -132,9 +145,9 @@ describe("setPositionRankLinked", () => {
     // deliberately out of sync: overall order is RB One, RB Two, QB One,
     // but positionRank still reflects a stale independent order
     await db.insert(players).values([
-      { seasonId: season.id, name: "RB One", team: "BUF", position: "RB", overallRank: 1, positionRank: 2 },
-      { seasonId: season.id, name: "RB Two", team: "KC", position: "RB", overallRank: 2, positionRank: 1 },
-      { seasonId: season.id, name: "QB One", team: "SF", position: "QB", overallRank: 3, positionRank: 1 },
+      { seasonId: season.id, userId, name: "RB One", team: "BUF", position: "RB", overallRank: 1, positionRank: 2 },
+      { seasonId: season.id, userId, name: "RB Two", team: "KC", position: "RB", overallRank: 2, positionRank: 1 },
+      { seasonId: season.id, userId, name: "QB One", team: "SF", position: "QB", overallRank: 3, positionRank: 1 },
     ]);
 
     await setPositionRankLinked({
@@ -168,6 +181,7 @@ describe("setPositionRankLinked", () => {
       .insert(players)
       .values({
         seasonId: season.id,
+        userId,
         name: "Solo QB",
         team: "BUF",
         position: "QB",

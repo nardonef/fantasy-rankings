@@ -4,6 +4,7 @@ import { getDb } from "@/lib/db";
 import { players, seasons } from "@/lib/db/schema";
 import { segmentToPosition } from "@/lib/positions";
 import { RankingList } from "@/components/ranking/ranking-list";
+import { currentUserId } from "@/lib/auth/current-user";
 
 export default async function PositionPage({
   params,
@@ -21,8 +22,13 @@ export default async function PositionPage({
   });
   if (!season) notFound();
 
+  const userId = await currentUserId();
   const positionPlayers = await db.query.players.findMany({
-    where: and(eq(players.seasonId, season.id), eq(players.position, position)),
+    where: and(
+      eq(players.seasonId, season.id),
+      eq(players.userId, userId),
+      eq(players.position, position),
+    ),
     orderBy: [asc(players.positionRank)],
   });
 

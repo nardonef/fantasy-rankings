@@ -2,8 +2,8 @@ import { desc } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { getDb } from "@/lib/db";
 import { seasons } from "@/lib/db/schema";
+import { UserButton } from "@clerk/nextjs";
 import { NewSeasonDialog } from "@/components/season/new-season-dialog";
-import { LogoutButton } from "@/components/auth/logout-button";
 
 export default async function RootPage() {
   const db = getDb();
@@ -26,7 +26,7 @@ export default async function RootPage() {
         </p>
       </div>
       <NewSeasonDialog seasons={[]} />
-      <LogoutButton />
+      <UserButton />
     </main>
   );
 }
