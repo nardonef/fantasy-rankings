@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { asc, eq } from "drizzle-orm";
+import { asc, eq, inArray } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { draftedPlayers, draftSessions, players, seasons, users } from "@/lib/db/schema";
 import { createTestUser } from "@/lib/test/fixtures";
@@ -36,11 +36,13 @@ async function addPlayer(
 
 let seasonId: number;
 let userId: number;
+let extraUserIds: number[];
 
 beforeEach(async () => {
   const user = await createTestUser();
   userId = user.id;
   vi.mocked(currentUserId).mockResolvedValue(userId);
+  extraUserIds = [];
 
   const [season] = await db.insert(seasons).values({ year: TEST_YEAR }).returning();
   seasonId = season.id;
@@ -49,6 +51,9 @@ beforeEach(async () => {
 afterEach(async () => {
   await db.delete(seasons).where(eq(seasons.id, seasonId));
   await db.delete(users).where(eq(users.id, userId));
+  if (extraUserIds.length > 0) {
+    await db.delete(users).where(inArray(users.id, extraUserIds));
+  }
 });
 
 describe("draftSessions/draftedPlayers schema constraints", () => {
@@ -62,13 +67,12 @@ describe("draftSessions/draftedPlayers schema constraints", () => {
 
   it("allows separate draft sessions for the same season for different users", async () => {
     const otherUser = await createTestUser();
+    extraUserIds.push(otherUser.id);
     await db.insert(draftSessions).values({ seasonId, userId });
 
     await expect(
       db.insert(draftSessions).values({ seasonId, userId: otherUser.id }),
     ).resolves.not.toThrow();
-
-    await db.delete(users).where(eq(users.id, otherUser.id));
   });
 
   it("cascades drafted_players deletion when the draft session is deleted", async () => {
