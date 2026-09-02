@@ -6,17 +6,16 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, User, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { TierDots } from "@/components/ranking/tier-dots";
 import { NotesEditor } from "@/components/ranking/notes-editor";
 import { TierBreakToggle } from "@/components/ranking/tier-break-toggle";
 import type { PlayerRecord, PlayerTier } from "@/app/actions/players";
 
-export const FLAG_HIGHLIGHT: Record<PlayerTier, string> = {
-  green: "bg-emerald-500/10 border-l-4 border-l-emerald-500",
-  yellow: "bg-amber-400/10 border-l-4 border-l-amber-400",
-  red: "bg-red-500/10 border-l-4 border-l-red-500",
+export const TIER_BAR_COLOR: Record<PlayerTier, string> = {
+  green: "bg-emerald-500",
+  yellow: "bg-amber-400",
+  red: "bg-red-500",
 };
 
 export function PlayerRow({
@@ -77,8 +76,7 @@ export function PlayerRow({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "flex flex-col gap-2 rounded-md border bg-card px-3 py-2.5 sm:flex-row sm:items-center sm:gap-3",
-        player.tier && FLAG_HIGHLIGHT[player.tier],
+        "group flex flex-col gap-2 border-b border-b-hairline px-[18px] py-3 hover:bg-surface-wash sm:flex-row sm:items-center sm:gap-3",
         isDragging && "opacity-50",
       )}
     >
@@ -87,45 +85,55 @@ export function PlayerRow({
           <button
             type="button"
             disabled={dragDisabled}
-            className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-30"
+            className="flex w-3.5 shrink-0 cursor-grab touch-none items-center justify-center text-[oklch(0.4_0_0)] hover:text-foreground active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-30"
             aria-label="Drag to reorder"
             {...attributes}
             {...listeners}
           >
-            <GripVertical className="size-4" />
+            <GripVertical className="size-3.5" />
           </button>
         )}
-        <span className="w-6 text-right text-sm tabular-nums text-muted-foreground">
+        <span className="w-[22px] shrink-0 text-right font-mono text-[13px] text-muted-2">
           {rank}
         </span>
         {player.photoUrl && !photoFailed ? (
           <Image
             src={player.photoUrl}
             alt=""
-            width={32}
-            height={32}
-            className="size-8 shrink-0 rounded-full object-cover"
+            width={24}
+            height={24}
+            className="size-6 shrink-0 rounded-full object-cover"
             onError={() => setPhotoFailed(true)}
           />
         ) : (
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-            <User className="size-4" />
+          <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+            <User className="size-3.5" />
           </span>
         )}
-        <span className="min-w-0 flex-1 truncate text-lg font-semibold leading-tight">{player.name}</span>
+        <span
+          className={cn(
+            "h-5 w-[3px] shrink-0 rounded-[2px]",
+            player.tier ? TIER_BAR_COLOR[player.tier] : "bg-transparent",
+          )}
+          aria-hidden="true"
+        />
+        <span className="min-w-0 flex-1 truncate text-[17px] font-semibold tracking-[-0.01em]">
+          {player.name}
+        </span>
       </div>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 sm:contents">
-        <TierDots
-          tier={player.tier}
-          onChange={(tier) => onTierChange(player, tier)}
-        />
         {showPosition && (
-          <Badge variant="secondary">
+          <span className="w-[74px] shrink-0 font-mono text-xs text-muted-foreground">
             {player.position}
-            {player.positionRank}
-          </Badge>
+            {player.positionRank} · {player.team}
+          </span>
         )}
-        <Badge variant="outline">{player.team}</Badge>
+        {!showPosition && (
+          <span className="w-[74px] shrink-0 font-mono text-xs text-muted-foreground">
+            {player.team}
+          </span>
+        )}
+        <TierDots tier={player.tier} onChange={(tier) => onTierChange(player, tier)} />
         <NotesEditor
           notes={player.notes}
           onSave={(notes) => onNotesChange(player, notes)}
@@ -139,11 +147,16 @@ export function PlayerRow({
         <Button
           type="button"
           variant="ghost"
-          size="sm"
+          size={confirming ? "sm" : "icon-sm"}
           onClick={handleDeleteClick}
-          className={cn("ml-auto sm:ml-0", confirming ? "text-destructive" : "text-muted-foreground")}
+          className={cn(
+            "ml-auto sm:ml-0",
+            confirming
+              ? "text-destructive"
+              : "text-[oklch(0.4_0_0)] opacity-0 group-hover:opacity-100 focus-visible:opacity-100",
+          )}
         >
-          {confirming ? "Confirm?" : <X className="size-4" />}
+          {confirming ? "Confirm?" : <X className="size-3.5" />}
         </Button>
       </div>
     </div>
