@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState } from "react";
 import { createSeason } from "@/app/actions/seasons";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,7 +10,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,8 +23,15 @@ import {
 
 type Season = { id: number; year: number };
 
-export function NewSeasonDialog({ seasons }: { seasons: Season[] }) {
-  const [open, setOpen] = useState(false);
+export function NewSeasonDialog({
+  seasons,
+  open,
+  onOpenChange,
+}: {
+  seasons: Season[];
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
   const [state, formAction, pending] = useActionState(
     createSeason,
     undefined,
@@ -33,10 +39,7 @@ export function NewSeasonDialog({ seasons }: { seasons: Season[] }) {
   const defaultYear = new Date().getFullYear();
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline">New Season</Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <form action={formAction}>
           <DialogHeader>

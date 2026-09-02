@@ -28,11 +28,12 @@ import {
 } from "@/app/actions/players";
 import type { Position } from "@/lib/positions";
 import { matchesSearch } from "@/lib/search";
-import { computeTierGroups, derivePositionRanks } from "@/lib/ranking";
+import { computeTierGroups, derivePositionRanks, summarizeRankings } from "@/lib/ranking";
 import { PlayerRow } from "@/components/ranking/player-row";
 import { AddPlayerDialog } from "@/components/ranking/add-player-dialog";
 import { SearchFilterBar } from "@/components/ranking/search-filter-bar";
-import { TierDivider } from "@/components/ranking/tier-divider";
+import { TierGroupHeader } from "@/components/ranking/tier-group-header";
+import { PageHeader } from "@/components/page-header";
 
 export function RankingList({
   context,
@@ -64,6 +65,10 @@ export function RankingList({
     ? visible.map(() => 1)
     : computeTierGroups(visible.map(({ player }) => player[tierBreakField]));
   const showTierDividers = !isFiltering && (tierNumbers.at(-1) ?? 1) > 1;
+  const tierCounts = tierNumbers.reduce<Record<number, number>>((acc, tier) => {
+    acc[tier] = (acc[tier] ?? 0) + 1;
+    return acc;
+  }, {});
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, {
@@ -259,33 +264,34 @@ export function RankingList({
     });
   }
 
+  const title = context === "overall" ? "Overall" : (position as string);
+  const tierCount = tierNumbers.at(-1) ?? 1;
+
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">
-          {items.length} player{items.length === 1 ? "" : "s"}
-        </p>
-        <div className="flex flex-1 items-center justify-end gap-3">
-          <SearchFilterBar value={query} onChange={setQuery} />
-          <AddPlayerDialog
-            seasonId={seasonId}
-            seasonYear={seasonYear}
-            fixedPosition={context === "position" ? position : undefined}
-            onCreated={handleCreated}
-          />
-        </div>
-      </div>
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        title={title}
+        subtitle={summarizeRankings(items.length, tierCount, positionRankLinked)}
+      >
+        <SearchFilterBar value={query} onChange={setQuery} />
+        <AddPlayerDialog
+          seasonId={seasonId}
+          seasonYear={seasonYear}
+          fixedPosition={context === "position" ? position : undefined}
+          onCreated={handleCreated}
+        />
+      </PageHeader>
       {isFiltering && (
-        <p className="text-xs text-muted-foreground">
+        <p className="font-mono text-[11px] text-muted-3">
           Clear search to reorder.
         </p>
       )}
       {items.length === 0 ? (
-        <p className="rounded-md border border-dashed py-12 text-center text-sm text-muted-foreground">
+        <p className="rounded-xl border border-border p-12 text-center text-sm text-muted-foreground">
           No players yet. Add your first one.
         </p>
       ) : visible.length === 0 ? (
-        <p className="rounded-md border border-dashed py-12 text-center text-sm text-muted-foreground">
+        <p className="rounded-xl border border-border p-12 text-center text-sm text-muted-foreground">
           No players match &quot;{query.trim()}&quot;.
         </p>
       ) : (
@@ -299,12 +305,15 @@ export function RankingList({
             items={visible.map(({ player }) => player.id)}
             strategy={verticalListSortingStrategy}
           >
-            <div className="flex flex-col gap-2">
+            <div className="overflow-hidden rounded-xl border border-border [&>*:last-child]:border-b-0">
               {visible.map(({ player, rank }, index) => (
                 <Fragment key={player.id}>
                   {showTierDividers &&
                     (index === 0 || tierNumbers[index] !== tierNumbers[index - 1]) && (
-                      <TierDivider tier={tierNumbers[index]} />
+                      <TierGroupHeader
+                        tier={tierNumbers[index]}
+                        count={tierCounts[tierNumbers[index]]}
+                      />
                     )}
                   <PlayerRow
                     player={player}
