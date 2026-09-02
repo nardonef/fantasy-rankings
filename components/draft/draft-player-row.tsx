@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { Check, User } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { TIER_BAR_COLOR } from "@/components/ranking/player-row";
+import { TIER_ROW_TINT } from "@/components/ranking/player-row";
 import type { DraftPlayerRecord } from "@/lib/draft";
 
 export function DraftPlayerRow({
@@ -22,7 +22,12 @@ export function DraftPlayerRow({
   const [photoFailed, setPhotoFailed] = useState(false);
 
   return (
-    <div className="flex flex-col gap-2 border-b border-b-hairline px-[18px] py-2.5 sm:flex-row sm:items-center sm:gap-3">
+    <div
+      className={cn(
+        "flex flex-col gap-2 border-b border-b-hairline px-[18px] py-2.5 sm:flex-row sm:items-center sm:gap-3",
+        player.tier && TIER_ROW_TINT[player.tier],
+      )}
+    >
       <div className="flex items-center gap-3 sm:contents">
         <span className="w-[22px] shrink-0 text-right font-mono text-[13px] text-muted-2">
           {rank}
@@ -41,13 +46,6 @@ export function DraftPlayerRow({
             <User className="size-3.5" />
           </span>
         )}
-        <span
-          className={cn(
-            "h-5 w-[3px] shrink-0 rounded-[2px]",
-            player.tier ? TIER_BAR_COLOR[player.tier] : "bg-transparent",
-          )}
-          aria-hidden="true"
-        />
         <span className="min-w-0 flex-1 truncate text-[17px] font-semibold tracking-[-0.01em]">
           {player.name}
         </span>

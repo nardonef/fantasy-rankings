@@ -12,10 +12,10 @@ import { NotesEditor } from "@/components/ranking/notes-editor";
 import { TierBreakToggle } from "@/components/ranking/tier-break-toggle";
 import type { PlayerRecord, PlayerTier } from "@/app/actions/players";
 
-export const TIER_BAR_COLOR: Record<PlayerTier, string> = {
-  green: "bg-emerald-500",
-  yellow: "bg-amber-400",
-  red: "bg-red-500",
+export const TIER_ROW_TINT: Record<PlayerTier, string> = {
+  green: "bg-emerald-500/10",
+  yellow: "bg-amber-400/10",
+  red: "bg-red-500/10",
 };
 
 export function PlayerRow({
@@ -77,6 +77,7 @@ export function PlayerRow({
       style={style}
       className={cn(
         "group flex flex-col gap-2 border-b border-b-hairline px-[18px] py-3 hover:bg-surface-wash sm:flex-row sm:items-center sm:gap-3",
+        player.tier && TIER_ROW_TINT[player.tier],
         isDragging && "opacity-50",
       )}
     >
@@ -110,13 +111,6 @@ export function PlayerRow({
             <User className="size-3.5" />
           </span>
         )}
-        <span
-          className={cn(
-            "h-5 w-[3px] shrink-0 rounded-[2px]",
-            player.tier ? TIER_BAR_COLOR[player.tier] : "bg-transparent",
-          )}
-          aria-hidden="true"
-        />
         <span className="min-w-0 flex-1 truncate text-[17px] font-semibold tracking-[-0.01em]">
           {player.name}
         </span>
