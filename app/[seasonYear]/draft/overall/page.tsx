@@ -24,24 +24,25 @@ export default async function DraftOverallPage({
     ? await getDraftPlayers(session.id, { context: "overall" })
     : [];
 
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="flex justify-end">
-        <DraftControls seasonId={season.id} seasonYear={year} hasSession={!!session} />
-      </div>
-      {session ? (
-        <DraftView
-          key={session.id}
-          seasonYear={year}
-          context="overall"
-          initialPlayers={draftPlayers}
-        />
-      ) : (
-        <p className="rounded-md border border-dashed py-12 text-center text-sm text-muted-foreground">
-          No draft started yet for {year}. Start one to snapshot your current
-          rankings.
-        </p>
-      )}
+  const controls = (
+    <DraftControls seasonId={season.id} seasonYear={year} hasSession={!!session} />
+  );
+
+  return session ? (
+    <DraftView
+      key={session.id}
+      seasonYear={year}
+      context="overall"
+      initialPlayers={draftPlayers}
+      controls={controls}
+    />
+  ) : (
+    <div className="flex flex-col gap-6">
+      <div className="flex justify-end">{controls}</div>
+      <p className="rounded-xl border border-border p-12 text-center text-sm text-muted-foreground">
+        No draft started yet for {year}. Start one to snapshot your current
+        rankings.
+      </p>
     </div>
   );
 }

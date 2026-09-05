@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { computeTierGroups, derivePositionRanks, ranksForOrder } from "./ranking";
+import {
+  computeTierGroups,
+  derivePositionRanks,
+  ranksForOrder,
+  summarizeRankings,
+} from "./ranking";
 
 describe("ranksForOrder", () => {
   it("assigns sequential 1..N ranks matching the given order", () => {
@@ -76,5 +81,25 @@ describe("derivePositionRanks", () => {
 
   it("returns an empty map for an empty input", () => {
     expect(derivePositionRanks([]).size).toBe(0);
+  });
+});
+
+describe("summarizeRankings", () => {
+  it("pluralizes players and tiers, and reports linked status", () => {
+    expect(summarizeRankings(12, 3, true)).toBe(
+      "12 players · 3 tiers · position ranks linked",
+    );
+  });
+
+  it("uses singular forms for a count of one", () => {
+    expect(summarizeRankings(1, 1, false)).toBe(
+      "1 player · 1 tier · position ranks independent",
+    );
+  });
+
+  it("reports independent position ranks", () => {
+    expect(summarizeRankings(5, 2, false)).toBe(
+      "5 players · 2 tiers · position ranks independent",
+    );
   });
 });

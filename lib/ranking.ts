@@ -35,3 +35,18 @@ export function computeTierGroups(breaksAfter: boolean[]): number[] {
   }
   return tiers;
 }
+
+/**
+ * Builds the page-header sub-line, e.g. "12 players · 3 tiers · position
+ * ranks linked".
+ */
+export function summarizeRankings(
+  playerCount: number,
+  tierCount: number,
+  positionRankLinked: boolean,
+): string {
+  const players = `${playerCount} player${playerCount === 1 ? "" : "s"}`;
+  const tiers = `${tierCount} tier${tierCount === 1 ? "" : "s"}`;
+  const linkStatus = `position ranks ${positionRankLinked ? "linked" : "independent"}`;
+  return `${players} · ${tiers} · ${linkStatus}`;
+}

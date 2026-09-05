@@ -1,11 +1,18 @@
 import { desc } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import { auth } from "@clerk/nextjs/server";
 import { getDb } from "@/lib/db";
 import { seasons } from "@/lib/db/schema";
 import { UserButton } from "@clerk/nextjs";
-import { NewSeasonDialog } from "@/components/season/new-season-dialog";
+import { NewSeasonButton } from "@/components/season/new-season-button";
+import { LandingPage } from "@/components/landing/landing-page";
 
 export default async function RootPage() {
+  const { userId } = await auth();
+  if (!userId) {
+    return <LandingPage />;
+  }
+
   const db = getDb();
   const latestSeason = await db.query.seasons.findFirst({
     orderBy: [desc(seasons.year)],
@@ -25,7 +32,7 @@ export default async function RootPage() {
           No seasons yet. Create one to get started.
         </p>
       </div>
-      <NewSeasonDialog seasons={[]} />
+      <NewSeasonButton seasons={[]} />
       <UserButton />
     </main>
   );

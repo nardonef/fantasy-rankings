@@ -34,14 +34,14 @@ export function NotesEditor({
         <Button
           type="button"
           variant="ghost"
-          size="sm"
+          size="icon-sm"
           aria-label="Edit notes"
           className={cn(
-            "text-muted-foreground",
+            "text-[oklch(0.4_0_0)]",
             notes && notes.length > 0 && "text-foreground",
           )}
         >
-          <StickyNote className="size-4" />
+          <StickyNote className="size-[15px]" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-72">

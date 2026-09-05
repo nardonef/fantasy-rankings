@@ -17,7 +17,7 @@ export function TierDots({
   onChange: (tier: PlayerTier | null) => void;
 }) {
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-1.5">
       {TIERS.map((t) => (
         <button
           key={t.value}
@@ -26,11 +26,9 @@ export function TierDots({
           aria-pressed={tier === t.value}
           onClick={() => onChange(tier === t.value ? null : t.value)}
           className={cn(
-            "size-3.5 rounded-full border-2 transition-transform",
+            "size-[9px] rounded-full opacity-[0.55] transition-opacity group-hover:opacity-100",
             t.className,
-            tier === t.value
-              ? "scale-110 border-foreground"
-              : "border-transparent opacity-40 hover:opacity-70",
+            tier === t.value && "opacity-100 outline-2 outline-offset-1 outline-foreground",
           )}
         />
       ))}

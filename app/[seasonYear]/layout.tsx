@@ -1,11 +1,12 @@
 import { desc, eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
-import { UserButton } from "@clerk/nextjs";
+import Link from "next/link";
 import { getDb } from "@/lib/db";
 import { seasons } from "@/lib/db/schema";
-import { SeasonSelector } from "@/components/season/season-selector";
-import { PositionRankLinkToggle } from "@/components/season/position-rank-link-toggle";
+import { SeasonMenu } from "@/components/season/season-menu";
 import { NavTabs } from "@/components/nav/nav-tabs";
+import { BrandMark } from "@/components/brand-mark";
+import { UserMenu } from "@/components/user-menu";
 
 export default async function SeasonLayout({
   children,
@@ -28,21 +29,24 @@ export default async function SeasonLayout({
 
   return (
     <div className="flex min-h-svh flex-col">
-      <header className="flex flex-wrap items-center justify-between gap-4 border-b px-4 py-3 sm:px-6">
+      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-hairline px-4 py-3.5 sm:px-7">
         <div className="flex flex-wrap items-center gap-4">
-          <span className="text-sm font-semibold tracking-tight">
-            Fantasy Rankings
-          </span>
-          <SeasonSelector seasons={allSeasons} currentYear={year} />
-          <PositionRankLinkToggle
+          <Link href={`/${year}/overall`} className="flex items-center gap-2">
+            <BrandMark />
+            <span className="text-sm font-semibold tracking-[-0.01em]">
+              Fantasy Rankings
+            </span>
+          </Link>
+          <SeasonMenu
+            seasons={allSeasons}
+            currentYear={year}
             seasonId={currentSeason.id}
-            seasonYear={year}
-            linked={currentSeason.positionRankLinked}
+            positionRankLinked={currentSeason.positionRankLinked}
           />
         </div>
         <div className="flex items-center gap-4">
           <NavTabs year={year} />
-          <UserButton />
+          <UserMenu />
         </div>
       </header>
       <main className="flex-1 px-4 py-6 sm:px-6">{children}</main>

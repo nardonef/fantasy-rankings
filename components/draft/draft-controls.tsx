@@ -43,7 +43,12 @@ export function DraftControls({
 
   if (!hasSession) {
     return (
-      <Button type="button" onClick={handleStart} disabled={pending}>
+      <Button
+        type="button"
+        onClick={handleStart}
+        disabled={pending}
+        className="h-[34px] rounded-[10px] px-3.5"
+      >
         {pending ? "Starting…" : "Start Draft"}
       </Button>
     );
@@ -52,7 +57,7 @@ export function DraftControls({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button type="button" variant="outline">
+        <Button type="button" variant="outline" className="h-[34px] rounded-[10px] px-3.5">
           Reset Draft
         </Button>
       </DialogTrigger>

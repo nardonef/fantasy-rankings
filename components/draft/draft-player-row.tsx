@@ -3,10 +3,8 @@
 import { useState } from "react";
 import Image from "next/image";
 import { Check, User } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { FLAG_HIGHLIGHT } from "@/components/ranking/player-row";
+import { TIER_ROW_TINT } from "@/components/ranking/player-row";
 import type { DraftPlayerRecord } from "@/lib/draft";
 
 export function DraftPlayerRow({
@@ -26,50 +24,51 @@ export function DraftPlayerRow({
   return (
     <div
       className={cn(
-        "flex flex-col gap-2 rounded-md border bg-card px-3 py-2.5 sm:flex-row sm:items-center sm:gap-3",
-        player.tier && FLAG_HIGHLIGHT[player.tier],
+        "flex flex-col gap-2 border-b border-b-hairline px-[18px] py-2.5 sm:flex-row sm:items-center sm:gap-3",
+        player.tier && TIER_ROW_TINT[player.tier],
       )}
     >
       <div className="flex items-center gap-3 sm:contents">
-        <span className="w-6 text-right text-sm tabular-nums text-muted-foreground">
+        <span className="w-[22px] shrink-0 text-right font-mono text-[13px] text-muted-2">
           {rank}
         </span>
         {player.photoUrl && !photoFailed ? (
           <Image
             src={player.photoUrl}
             alt=""
-            width={32}
-            height={32}
-            className="size-8 shrink-0 rounded-full object-cover"
+            width={24}
+            height={24}
+            className="size-6 shrink-0 rounded-full object-cover"
             onError={() => setPhotoFailed(true)}
           />
         ) : (
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-            <User className="size-4" />
+          <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+            <User className="size-3.5" />
           </span>
         )}
-        <span className="min-w-0 flex-1 truncate text-lg font-semibold leading-tight">
+        <span className="min-w-0 flex-1 truncate text-[17px] font-semibold tracking-[-0.01em]">
           {player.name}
         </span>
       </div>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 sm:contents">
-        {showPosition && (
-          <Badge variant="secondary">
+        {showPosition ? (
+          <span className="w-[74px] shrink-0 font-mono text-xs text-muted-foreground">
             {entry.position}
-            {entry.positionRank}
-          </Badge>
+            {entry.positionRank} · {player.team}
+          </span>
+        ) : (
+          <span className="w-[74px] shrink-0 font-mono text-xs text-muted-foreground">
+            {player.team}
+          </span>
         )}
-        <Badge variant="outline">{player.team}</Badge>
-        <Button
+        <button
           type="button"
-          variant="ghost"
-          size="sm"
           onClick={() => onDrafted(entry)}
-          className="ml-auto text-muted-foreground hover:text-foreground sm:ml-0"
+          className="ml-auto flex h-7 items-center gap-1.5 rounded-lg border border-input px-2.5 text-xs font-medium text-[oklch(0.35_0_0)] hover:bg-muted sm:ml-0"
         >
-          <Check className="size-4" />
-          <span className="sr-only">Mark drafted</span>
-        </Button>
+          <Check className="size-[13px]" />
+          Taken
+        </button>
       </div>
     </div>
   );
