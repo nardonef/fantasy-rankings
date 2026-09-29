@@ -27,7 +27,7 @@ export function SeasonSelector({
         value={String(currentYear)}
         onValueChange={(value) => router.push(`/${value}/overall`)}
       >
-        <SelectTrigger aria-label="Season">
+        <SelectTrigger aria-label="Season" className="h-[34px] border-hairline-2 font-mono text-[13px]">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -38,7 +38,7 @@ export function SeasonSelector({
           ))}
         </SelectContent>
       </Select>
-      <NewSeasonDialog seasons={seasons} />
+      <NewSeasonDialog seasons={seasons} compact />
     </div>
   );
 }

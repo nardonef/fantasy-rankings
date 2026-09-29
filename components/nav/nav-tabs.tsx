@@ -14,10 +14,10 @@ const TABS = [
 
 function tabClassName(active: boolean) {
   return cn(
-    "shrink-0 rounded-md px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors",
+    "flex shrink-0 items-center gap-1.5 rounded-[7px] px-3 py-1.5 text-sm whitespace-nowrap transition-colors",
     active
-      ? "bg-foreground text-background"
-      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+      ? "bg-raised font-semibold text-chalk shadow-[inset_0_0_0_1px_var(--hairline-2)]"
+      : "font-medium text-chalk-faint hover:text-chalk",
   );
 }
 
@@ -25,7 +25,7 @@ export function NavTabs({ year }: { year: number }) {
   const pathname = usePathname();
 
   return (
-    <nav className="flex min-w-0 items-center gap-1 overflow-x-auto">
+    <nav className="flex min-w-0 items-center gap-0.5 overflow-x-auto rounded-[10px] border border-hairline p-[3px]">
       {TABS.map((tab) => {
         const href = `/${year}/${tab.segment}`;
         return (
@@ -38,6 +38,7 @@ export function NavTabs({ year }: { year: number }) {
         href={`/${year}/draft/overall`}
         className={tabClassName(pathname.startsWith(`/${year}/draft`))}
       >
+        <span aria-hidden className="size-[5px] rounded-full bg-rankings" />
         Draft
       </Link>
     </nav>

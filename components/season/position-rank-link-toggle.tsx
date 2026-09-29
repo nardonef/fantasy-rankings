@@ -24,8 +24,9 @@ export function PositionRankLinkToggle({
   return (
     <Button
       type="button"
-      variant="outline"
+      variant="ghost"
       size="sm"
+      className="gap-2 px-1 font-mono text-[11px] tracking-[0.14em] uppercase text-chalk-dim hover:bg-transparent"
       onClick={handleClick}
       disabled={isPending}
       aria-pressed={linked}
@@ -35,6 +36,14 @@ export function PositionRankLinkToggle({
           : "Position ranks are independent of the overall order. Click to derive them from overall instead."
       }
     >
+      <span
+        aria-hidden
+        className={`relative h-[14px] w-[24px] shrink-0 rounded-full transition-colors ${linked ? "bg-rankings" : "bg-hairline-2"}`}
+      >
+        <span
+          className={`absolute top-[2px] size-[10px] rounded-full bg-chalk transition-all ${linked ? "left-[12px]" : "left-[2px]"}`}
+        />
+      </span>
       <span className="sm:hidden">
         {isPending ? "Updating…" : linked ? "Linked" : "Independent"}
       </span>
@@ -42,8 +51,8 @@ export function PositionRankLinkToggle({
         {isPending
           ? "Updating…"
           : linked
-            ? "Position ranks: linked"
-            : "Position ranks: independent"}
+            ? "Pos ranks linked"
+            : "Pos ranks independent"}
       </span>
     </Button>
   );

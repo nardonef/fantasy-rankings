@@ -5,6 +5,7 @@ import { getDb } from "@/lib/db";
 import { seasons } from "@/lib/db/schema";
 import { SeasonSelector } from "@/components/season/season-selector";
 import { PositionRankLinkToggle } from "@/components/season/position-rank-link-toggle";
+import { Wordmark } from "@/components/wordmark";
 import { NavTabs } from "@/components/nav/nav-tabs";
 
 export default async function SeasonLayout({
@@ -28,11 +29,10 @@ export default async function SeasonLayout({
 
   return (
     <div className="flex min-h-svh flex-col">
-      <header className="flex flex-wrap items-center justify-between gap-4 border-b px-4 py-3 sm:px-6">
+      <header className="flex flex-wrap items-center justify-between gap-4 border-b px-4 py-3.5 sm:px-6">
         <div className="flex flex-wrap items-center gap-4">
-          <span className="text-sm font-semibold tracking-tight">
-            Fantasy Rankings
-          </span>
+          <Wordmark tool="rankings" />
+          <div aria-hidden className="h-5 w-px bg-hairline-2" />
           <SeasonSelector seasons={allSeasons} currentYear={year} />
           <PositionRankLinkToggle
             seasonId={currentSeason.id}

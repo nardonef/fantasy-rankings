@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Fantasy Rankings",
+  title: "fantasy·rankings",
   description: "Personal fantasy football player rankings",
 };
 
@@ -24,12 +24,23 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
-        <ClerkProvider>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <ClerkProvider
+          appearance={{
+            variables: {
+              colorPrimary: "#4cd48f",
+              colorBackground: "#0a0a0b",
+              colorForeground: "#fafafa",
+              colorInput: "#0e0e16",
+              borderRadius: "9px",
+              fontFamily: "Geist",
+            },
+          }}
+        >
+          <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark">
             {children}
             <Toaster />
           </ThemeProvider>

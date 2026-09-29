@@ -19,7 +19,7 @@ export function TierBreakToggle({
       aria-label={active ? "Remove tier break after this player" : "Insert tier break after this player"}
       className={cn(
         "text-muted-foreground",
-        active && "text-foreground",
+        active && "text-rankings hover:text-rankings",
       )}
     >
       <SeparatorHorizontal className="size-4" />

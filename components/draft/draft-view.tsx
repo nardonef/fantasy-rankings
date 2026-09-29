@@ -91,11 +91,11 @@ export function DraftView({
         <SearchFilterBar value={query} onChange={setQuery} />
       </div>
       {items.length === 0 ? (
-        <p className="rounded-md border border-dashed py-12 text-center text-sm text-muted-foreground">
+        <p className="rounded-md border border-dashed border-hairline-2 py-12 text-center text-sm text-chalk-faint">
           No players in this draft yet.
         </p>
       ) : visible.length === 0 ? (
-        <p className="rounded-md border border-dashed py-12 text-center text-sm text-muted-foreground">
+        <p className="rounded-md border border-dashed border-hairline-2 py-12 text-center text-sm text-chalk-faint">
           {remaining.length === 0
             ? "Everyone's been drafted."
             : `No players match "${query.trim()}".`}
