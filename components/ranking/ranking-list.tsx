@@ -63,8 +63,6 @@ export function RankingList({
   const tierNumbers = isFiltering
     ? visible.map(() => 1)
     : computeTierGroups(visible.map(({ player }) => player[tierBreakField]));
-  const totalTiers =
-    computeTierGroups(items.map((p) => p[tierBreakField])).at(-1) ?? 1;
   const showTierDividers = !isFiltering && (tierNumbers.at(-1) ?? 1) > 1;
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -268,10 +266,6 @@ export function RankingList({
           <p className="kicker text-rankings">
             {seasonYear} · {context === "overall" ? "Overall" : position}
           </p>
-          <h1 className="text-[40px] leading-none font-semibold tracking-[-0.045em]">
-            {items.length} player{items.length === 1 ? "" : "s"}, {totalTiers} tier
-            {totalTiers === 1 ? "" : "s"}.
-          </h1>
         </div>
         <div className="flex flex-1 items-center justify-end gap-3">
           <SearchFilterBar value={query} onChange={setQuery} />
