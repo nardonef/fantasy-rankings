@@ -63,6 +63,8 @@ export function RankingList({
   const tierNumbers = isFiltering
     ? visible.map(() => 1)
     : computeTierGroups(visible.map(({ player }) => player[tierBreakField]));
+  const totalTiers =
+    computeTierGroups(items.map((p) => p[tierBreakField])).at(-1) ?? 1;
   const showTierDividers = !isFiltering && (tierNumbers.at(-1) ?? 1) > 1;
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -262,9 +264,15 @@ export function RankingList({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">
-          {items.length} player{items.length === 1 ? "" : "s"}
-        </p>
+        <div className="flex flex-col gap-2">
+          <p className="kicker text-rankings">
+            {seasonYear} · {context === "overall" ? "Overall" : position}
+          </p>
+          <h1 className="text-[40px] leading-none font-semibold tracking-[-0.045em]">
+            {items.length} player{items.length === 1 ? "" : "s"}, {totalTiers} tier
+            {totalTiers === 1 ? "" : "s"}.
+          </h1>
+        </div>
         <div className="flex flex-1 items-center justify-end gap-3">
           <SearchFilterBar value={query} onChange={setQuery} />
           <AddPlayerDialog
@@ -281,11 +289,11 @@ export function RankingList({
         </p>
       )}
       {items.length === 0 ? (
-        <p className="rounded-md border border-dashed py-12 text-center text-sm text-muted-foreground">
+        <p className="rounded-md border border-dashed border-hairline-2 py-12 text-center text-sm text-chalk-faint">
           No players yet. Add your first one.
         </p>
       ) : visible.length === 0 ? (
-        <p className="rounded-md border border-dashed py-12 text-center text-sm text-muted-foreground">
+        <p className="rounded-md border border-dashed border-hairline-2 py-12 text-center text-sm text-chalk-faint">
           No players match &quot;{query.trim()}&quot;.
         </p>
       ) : (
@@ -304,7 +312,10 @@ export function RankingList({
                 <Fragment key={player.id}>
                   {showTierDividers &&
                     (index === 0 || tierNumbers[index] !== tierNumbers[index - 1]) && (
-                      <TierDivider tier={tierNumbers[index]} />
+                      <TierDivider
+                        tier={tierNumbers[index]}
+                        count={tierNumbers.filter((t) => t === tierNumbers[index]).length}
+                      />
                     )}
                   <PlayerRow
                     player={player}

@@ -1,4 +1,3 @@
-import { SeparatorHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -18,11 +17,11 @@ export function TierBreakToggle({
       aria-pressed={active}
       aria-label={active ? "Remove tier break after this player" : "Insert tier break after this player"}
       className={cn(
-        "text-muted-foreground",
-        active && "text-foreground",
+        "h-6 rounded-[5px] border border-dashed border-hairline-2 px-1.5 font-mono text-[10px] tracking-[0.14em] uppercase text-chalk-muted",
+        active && "border-solid border-rankings text-rankings hover:text-rankings",
       )}
     >
-      <SeparatorHorizontal className="size-4" />
+      Break
     </Button>
   );
 }

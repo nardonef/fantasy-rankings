@@ -14,9 +14,9 @@ import { TierBreakToggle } from "@/components/ranking/tier-break-toggle";
 import type { PlayerRecord, PlayerTier } from "@/app/actions/players";
 
 export const FLAG_HIGHLIGHT: Record<PlayerTier, string> = {
-  green: "bg-emerald-500/10 border-l-4 border-l-emerald-500",
-  yellow: "bg-amber-400/10 border-l-4 border-l-amber-400",
-  red: "bg-red-500/10 border-l-4 border-l-red-500",
+  green: "bg-rankings/[.06] shadow-[inset_3px_0_0_var(--rankings)] pl-[15px]",
+  yellow: "bg-flag-yellow/[.06] shadow-[inset_3px_0_0_var(--flag-yellow)] pl-[15px]",
+  red: "bg-regret/[.06] shadow-[inset_3px_0_0_var(--regret)] pl-[15px]",
 };
 
 export function PlayerRow({
@@ -77,7 +77,7 @@ export function PlayerRow({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "flex flex-col gap-2 rounded-md border bg-card px-3 py-2.5 sm:flex-row sm:items-center sm:gap-3",
+        "flex flex-col gap-2 rounded-[9px] border border-hairline bg-field px-3 py-2.5 sm:h-[52px] sm:flex-row sm:items-center sm:gap-3 sm:py-0",
         player.tier && FLAG_HIGHLIGHT[player.tier],
         isDragging && "opacity-50",
       )}
@@ -87,7 +87,7 @@ export function PlayerRow({
           <button
             type="button"
             disabled={dragDisabled}
-            className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-30"
+            className="cursor-grab touch-none text-chalk-faintest hover:text-chalk-dim active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-30"
             aria-label="Drag to reorder"
             {...attributes}
             {...listeners}
@@ -95,7 +95,7 @@ export function PlayerRow({
             <GripVertical className="size-4" />
           </button>
         )}
-        <span className="w-6 text-right text-sm tabular-nums text-muted-foreground">
+        <span className="w-6 text-right font-mono text-[13px] tabular-nums text-chalk-muted">
           {rank}
         </span>
         {player.photoUrl && !photoFailed ? (
@@ -108,11 +108,11 @@ export function PlayerRow({
             onError={() => setPhotoFailed(true)}
           />
         ) : (
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-hairline-2 bg-raised text-muted-foreground">
             <User className="size-4" />
           </span>
         )}
-        <span className="min-w-0 flex-1 truncate text-lg font-semibold leading-tight">{player.name}</span>
+        <span className="min-w-0 flex-1 truncate text-[17px] font-semibold tracking-[-0.02em]">{player.name}</span>
       </div>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 sm:contents">
         <TierDots
@@ -120,16 +120,21 @@ export function PlayerRow({
           onChange={(tier) => onTierChange(player, tier)}
         />
         {showPosition && (
-          <Badge variant="secondary">
+          <Badge variant="secondary" className="w-[52px] rounded-[5px] bg-raised font-mono text-[11px]">
             {player.position}
             {player.positionRank}
           </Badge>
         )}
-        <Badge variant="outline">{player.team}</Badge>
+        <Badge variant="outline" className="w-11 rounded-[5px] border-hairline-2 font-mono text-[11px] text-chalk-dim">{player.team}</Badge>
         <NotesEditor
           notes={player.notes}
           onSave={(notes) => onNotesChange(player, notes)}
         />
+        {player.notes && (
+          <span className="hidden w-[150px] truncate text-[13px] text-chalk-faint sm:block">
+            {player.notes}
+          </span>
+        )}
         {showTierBreakToggle && (
           <TierBreakToggle
             active={tierBreakActive}
@@ -141,7 +146,7 @@ export function PlayerRow({
           variant="ghost"
           size="sm"
           onClick={handleDeleteClick}
-          className={cn("ml-auto sm:ml-0", confirming ? "text-destructive" : "text-muted-foreground")}
+          className={cn("ml-auto sm:ml-0", confirming ? "text-regret" : "text-chalk-muted")}
         >
           {confirming ? "Confirm?" : <X className="size-4" />}
         </Button>

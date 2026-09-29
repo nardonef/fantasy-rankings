@@ -24,7 +24,13 @@ import {
 
 type Season = { id: number; year: number };
 
-export function NewSeasonDialog({ seasons }: { seasons: Season[] }) {
+export function NewSeasonDialog({
+  seasons,
+  compact = false,
+}: {
+  seasons: Season[];
+  compact?: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const [state, formAction, pending] = useActionState(
     createSeason,
@@ -35,7 +41,17 @@ export function NewSeasonDialog({ seasons }: { seasons: Season[] }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">New Season</Button>
+        {compact ? (
+          <Button
+            variant="outline"
+            aria-label="New season"
+            className="size-[34px] border-hairline-2 p-0 font-mono"
+          >
+            +
+          </Button>
+        ) : (
+          <Button variant="outline">New Season</Button>
+        )}
       </DialogTrigger>
       <DialogContent>
         <form action={formAction}>

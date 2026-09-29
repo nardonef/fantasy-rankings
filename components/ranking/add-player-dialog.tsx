@@ -128,7 +128,7 @@ export function AddPlayerDialog({
       }}
     >
       <DialogTrigger asChild>
-        <Button>Add Player</Button>
+        <Button className="h-[38px] rounded-[9px] px-4 font-semibold">+ Add player</Button>
       </DialogTrigger>
       <DialogContent>
         <form onSubmit={handleSubmit} ref={formRef}>

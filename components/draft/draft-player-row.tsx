@@ -26,12 +26,12 @@ export function DraftPlayerRow({
   return (
     <div
       className={cn(
-        "flex flex-col gap-2 rounded-md border bg-card px-3 py-2.5 sm:flex-row sm:items-center sm:gap-3",
+        "flex flex-col gap-2 rounded-[9px] border border-hairline bg-field px-3 py-2.5 sm:h-[52px] sm:flex-row sm:items-center sm:gap-3 sm:py-0",
         player.tier && FLAG_HIGHLIGHT[player.tier],
       )}
     >
       <div className="flex items-center gap-3 sm:contents">
-        <span className="w-6 text-right text-sm tabular-nums text-muted-foreground">
+        <span className="w-6 text-right font-mono text-[13px] tabular-nums text-chalk-muted">
           {rank}
         </span>
         {player.photoUrl && !photoFailed ? (
@@ -44,28 +44,28 @@ export function DraftPlayerRow({
             onError={() => setPhotoFailed(true)}
           />
         ) : (
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-hairline-2 bg-raised text-muted-foreground">
             <User className="size-4" />
           </span>
         )}
-        <span className="min-w-0 flex-1 truncate text-lg font-semibold leading-tight">
+        <span className="min-w-0 flex-1 truncate text-[17px] font-semibold tracking-[-0.02em]">
           {player.name}
         </span>
       </div>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 sm:contents">
         {showPosition && (
-          <Badge variant="secondary">
+          <Badge variant="secondary" className="w-[52px] rounded-[5px] bg-raised font-mono text-[11px]">
             {entry.position}
             {entry.positionRank}
           </Badge>
         )}
-        <Badge variant="outline">{player.team}</Badge>
+        <Badge variant="outline" className="w-11 rounded-[5px] border-hairline-2 font-mono text-[11px] text-chalk-dim">{player.team}</Badge>
         <Button
           type="button"
           variant="ghost"
           size="sm"
           onClick={() => onDrafted(entry)}
-          className="ml-auto text-muted-foreground hover:text-foreground sm:ml-0"
+          className="ml-auto text-chalk-muted hover:text-rankings sm:ml-0"
         >
           <Check className="size-4" />
           <span className="sr-only">Mark drafted</span>
