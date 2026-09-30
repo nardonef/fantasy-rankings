@@ -28,7 +28,8 @@ export const rankingsAppearance: ComponentProps<typeof SignIn>["appearance"] = {
     header: "items-start text-left gap-2",
     headerTitle: "text-[28px] font-semibold tracking-[-0.035em] text-chalk",
     headerSubtitle: "text-[15px] text-chalk-faint",
-    socialButtons: "grid grid-cols-2 gap-2.5 max-lg:grid-cols-1",
+    socialButtons:
+      "grid grid-cols-2 gap-2.5 max-lg:grid-cols-1 has-[>:only-child]:grid-cols-1",
     socialButtonsBlockButton:
       "h-11 max-lg:h-12 border border-hairline-2 bg-field hover:bg-raised rounded-[9px] text-sm font-medium text-chalk",
     socialButtonsBlockButtonText: "font-medium",
@@ -41,8 +42,9 @@ export const rankingsAppearance: ComponentProps<typeof SignIn>["appearance"] = {
       "h-[46px] max-lg:h-12 bg-input-bg border border-[#262633] rounded-[9px] px-3.5 font-mono text-sm text-chalk placeholder:text-[#4a4a58] focus:border-rankings focus:ring-[3px] focus:ring-rankings/15",
     formButtonPrimary:
       "h-[46px] max-lg:h-12 bg-rankings hover:bg-[#6ee0a6] text-[#0a0a0b] text-[15px] font-semibold normal-case rounded-[9px] shadow-none",
-    footer: "bg-transparent [&>*:last-child]:hidden",
-    footerAction: "justify-center",
+    footer: "bg-transparent bg-none [&>*:last-child]:hidden",
+    footerItem: "border-0 p-0",
+    footerAction: "justify-center p-0 mt-2",
     footerActionText: "text-sm text-chalk-faint",
     footerActionLink: "text-sm font-medium text-rankings hover:text-[#6ee0a6]",
     identityPreviewEditButton: "text-rankings",
