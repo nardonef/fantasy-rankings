@@ -30,6 +30,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col">
         <ClerkProvider
+          signInUrl="/sign-in"
+          signUpUrl="/sign-up"
           localization={rankingsLocalization}
           appearance={{
             cssLayerName: "clerk",
