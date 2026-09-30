@@ -32,6 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <ClerkProvider
           localization={rankingsLocalization}
           appearance={{
+            cssLayerName: "clerk",
             variables: {
               colorPrimary: "#4cd48f",
               colorBackground: "#0a0a0b",
